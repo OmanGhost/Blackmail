@@ -1,0 +1,2 @@
+@extends('layouts.app',['title'=>$title])
+@section('content')<section class="container-page py-24 text-center"><span class="eyebrow">قيد البناء ضمن خارطة المنتج</span><h1 class="section-title">{{ $title }}</h1><p class="mx-auto mt-5 max-w-xl leading-8">تم تجهيز المسار والبنية الأساسية. سيُنشر المحتوى بعد اكتمال المراجعة المهنية والتحقق من المصادر.</p><a href="{{ route('home') }}" class="mt-8 inline-flex rounded-2xl bg-brand px-6 py-4 font-bold text-white">العودة للرئيسية</a></section>@endsection

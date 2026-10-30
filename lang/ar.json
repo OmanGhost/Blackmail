@@ -1,0 +1,10 @@
+{
+    "Name": "الاسم", "Email address": "البريد الإلكتروني", "Password": "كلمة المرور", "Is active": "الحساب نشط", "Email verified at": "تاريخ توثيق البريد", "Mfa confirmed at": "تأكيد المصادقة الثنائية", "Roles": "الأدوار",
+    "Name ar": "الاسم بالعربية", "Name en": "الاسم بالإنجليزية", "Title ar": "العنوان بالعربية", "Title en": "العنوان بالإنجليزية", "Description ar": "الوصف بالعربية", "Description en": "الوصف بالإنجليزية", "Content ar": "المحتوى بالعربية", "Content en": "المحتوى بالإنجليزية",
+    "Slug": "الرابط المختصر", "Category": "التصنيف", "Category id": "التصنيف", "Author": "الكاتب", "Author id": "الكاتب", "Reviewer": "المراجع", "Reviewer id": "المراجع", "Status": "الحالة", "Published at": "تاريخ النشر", "Last reviewed at": "آخر مراجعة", "Featured image": "الصورة البارزة",
+    "Question ar": "السؤال بالعربية", "Answer ar": "الإجابة بالعربية", "Question en": "السؤال بالإنجليزية", "Answer en": "الإجابة بالإنجليزية", "Is published": "منشور", "Sort order": "الترتيب", "Is enabled": "مفعّل",
+    "Code": "الرمز", "Flag": "العلم", "Verification status": "حالة التحقق", "Last verified at": "آخر تحقق", "Verified by": "تم التحقق بواسطة", "Emergency information ar": "معلومات الطوارئ بالعربية", "Emergency information en": "معلومات الطوارئ بالإنجليزية", "Reporting instructions ar": "تعليمات الإبلاغ بالعربية", "Reporting instructions en": "تعليمات الإبلاغ بالإنجليزية",
+    "Country": "الدولة", "Country id": "الدولة", "Official url": "الرابط الرسمي", "Phone": "الهاتف", "Instructions ar": "التعليمات بالعربية", "Approval status": "حالة الموافقة", "Approved by": "اعتمد بواسطة", "Summary ar": "الملخص بالعربية", "Summary en": "الملخص بالإنجليزية",
+    "Locale": "اللغة", "Title": "العنوان", "Summary": "الملخص", "Content": "المحتوى", "Seo title": "عنوان SEO", "Seo description": "وصف SEO", "Open graph": "بيانات Open Graph", "Sources": "المصادر",
+    "Type": "النوع", "Group": "المجموعة", "Key": "المفتاح", "Value": "القيمة", "Is public": "عام", "Created at": "تاريخ الإنشاء", "Updated at": "آخر تحديث", "Actions": "الإجراءات"
+}

@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@theme { --font-sans:'Cairo',ui-sans-serif,system-ui,sans-serif; --color-navy:#102A43; --color-brand:#2563EB; --color-success:#10B981; --color-surface:#F3F6FA; --color-danger:#DC2626; }
+@custom-variant dark (&:where(.dark, .dark *));
+html { scroll-behavior:smooth; }
+body { font-family:var(--font-sans); }
+.container-page { width:min(100% - 2rem,76rem); margin-inline:auto; }
+.focus-ring { @apply focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand/40; }
+.section-title { @apply text-3xl font-extrabold tracking-tight text-navy dark:text-white md:text-4xl; }
+.eyebrow { @apply mb-3 inline-flex rounded-full bg-blue-50 px-4 py-2 text-sm font-bold text-brand dark:bg-blue-950/50; }
+.card { @apply rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800; }
