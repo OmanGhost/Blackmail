@@ -16,6 +16,11 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
         $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+        if ($request->routeIs('consultation.track', 'consultation.track.lookup', 'consultation.open', 'consultation.success', 'consultation.reply', 'account*')) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+            $response->headers->set('Referrer-Policy', 'no-referrer');
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        }
         if (app()->isProduction()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }

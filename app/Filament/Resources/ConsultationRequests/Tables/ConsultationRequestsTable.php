@@ -15,8 +15,13 @@ class ConsultationRequestsTable
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('public_id')
-                    ->searchable(),
+                TextColumn::make('request_number')
+                    ->label('رقم الطلب')
+                    ->copyable()
+                    ->sortable(['id'])
+                    ->searchable(query: function ($query, string $search) {
+                        return $query->where('consultation_requests.id', ctype_digit($search) ? (int) $search - 100000 : -1);
+                    }),
                 TextColumn::make('category')
                     ->searchable(),
                 TextColumn::make('urgency')
@@ -33,7 +38,10 @@ class ConsultationRequestsTable
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('status')
+                    ->formatStateUsing(fn (string $state): string => \App\Models\ConsultationRequest::statusOptions()[$state] ?? $state)
+                    ->badge()
                     ->searchable(),
+                TextColumn::make('rating')->label('التقييم / 5')->placeholder('لم يُقيّم')->sortable(),
                 TextColumn::make('assignedTo.name')
                     ->sortable(),
                 TextColumn::make('retain_until')
@@ -50,7 +58,7 @@ class ConsultationRequestsTable
             ])
             ->filters([
                 SelectFilter::make('urgency')->label('الأولوية')->options(['normal' => 'عادي', 'urgent' => 'عاجل', 'critical' => 'حرج']),
-                SelectFilter::make('status')->label('الحالة')->options(['new' => 'جديد', 'in_review' => 'قيد المراجعة', 'contacted' => 'تم التواصل', 'closed' => 'مغلق']),
+                SelectFilter::make('status')->label('الحالة')->options(\App\Models\ConsultationRequest::statusOptions()),
                 SelectFilter::make('assigned_to')->label('المسؤول')->relationship('assignedTo', 'name')->searchable()->preload(),
             ])
             ->recordActions([

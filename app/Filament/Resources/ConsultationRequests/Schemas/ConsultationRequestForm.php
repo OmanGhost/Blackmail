@@ -29,7 +29,7 @@ class ConsultationRequestForm
                 Textarea::make('description')->label('وصف الحالة (مشفّر في التخزين)')->disabled()->dehydrated(false)->rows(8)->columnSpanFull(),
                 DateTimePicker::make('consented_at')
                     ->disabled()->dehydrated(false),
-                Select::make('status')->options(['new' => 'جديد', 'in_review' => 'قيد المراجعة', 'contacted' => 'تم التواصل', 'closed' => 'مغلق'])->required(),
+                Select::make('status')->options(\App\Models\ConsultationRequest::statusOptions())->required(),
                 Select::make('assigned_to')->relationship('assignedTo', 'name')->searchable()->preload()->nullable()->default(null),
                 DateTimePicker::make('retain_until'),
             ]);

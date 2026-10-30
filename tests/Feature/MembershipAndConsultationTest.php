@@ -78,7 +78,7 @@ class MembershipAndConsultationTest extends TestCase
         $case = ConsultationRequest::firstOrFail();
         $message = $case->messages()->create(['sender' => 'staff', 'body' => 'Please preserve the evidence.']);
         $this->assertNotSame('Please preserve the evidence.', $message->getRawOriginal('body'));
-        $this->post('/consultation/reply', ['body' => 'My reply'])->assertNotFound();
+        $this->withSession(['consultation_access_id' => null])->post('/consultation/reply', ['body' => 'My reply'])->assertNotFound();
         $this->post('/consultation/track', ['tracking_code' => $code])->assertOk()->assertSee('Please preserve the evidence.');
         $this->post('/consultation/reply', ['body' => 'Evidence has been preserved.'])->assertRedirect('/consultation/track');
         $this->assertSame('in_review', $case->fresh()->status);

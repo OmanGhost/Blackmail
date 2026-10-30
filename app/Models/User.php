@@ -11,6 +11,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -53,12 +54,23 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'password' => 'hashed',
             'is_active' => 'boolean',
             'mfa_confirmed_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    public function consultationRequests(): HasMany
+    {
+        return $this->hasMany(ConsultationRequest::class);
+    }
+
+    public function emailDeliveries(): HasMany
+    {
+        return $this->hasMany(EmailDelivery::class)->latest();
     }
 
     public function hasRole(string $role): bool

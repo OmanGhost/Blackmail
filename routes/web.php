@@ -21,8 +21,12 @@ Route::get('/stop-blackmail', [ConsultationController::class, 'emergency'])->nam
 Route::post('/consultation', [ConsultationController::class, 'store'])->middleware('throttle:5,10')->name('consultation.store');
 Route::get('/consultation/success', [ConsultationController::class, 'success'])->name('consultation.success');
 Route::get('/consultation/track', [ConsultationController::class, 'showTracking'])->name('consultation.track');
+Route::get('/consultation/open/{consultationRequest}', [ConsultationController::class, 'openLink'])->middleware(['signed', 'throttle:20,1'])->name('consultation.open');
+Route::post('/consultation/forget', [ConsultationController::class, 'forget'])->name('consultation.forget');
 Route::post('/consultation/track', [ConsultationController::class, 'track'])->middleware('throttle:10,10')->name('consultation.track.lookup');
 Route::post('/consultation/reply', [ConsultationController::class, 'reply'])->middleware('throttle:10,10')->name('consultation.reply');
+Route::post('/consultation/close', [ConsultationController::class, 'close'])->middleware('throttle:10,10')->name('consultation.close');
+Route::post('/consultation/rate', [ConsultationController::class, 'rate'])->middleware('throttle:10,10')->name('consultation.rate');
 Route::view('/contact', 'pages.coming-soon', ['title' => 'تواصل معنا'])->name('contact');
 
 Route::post('/locale', function (Request $request) {
@@ -43,6 +47,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 });
 Route::middleware('auth')->group(function () {
+    Route::get('/account/requests/{consultationRequest}', [ConsultationController::class, 'memberRequest'])->name('account.requests.show');
     Route::get('/account', [AuthController::class, 'account'])->name('account');
     Route::put('/account', [AuthController::class, 'updateProfile'])->name('account.update');
     Route::put('/account/password', [AuthController::class, 'updatePassword'])->name('account.password');

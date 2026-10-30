@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ConsultationController extends Controller
@@ -41,7 +43,8 @@ class ConsultationController extends Controller
         ]);
         $publicId = (string) Str::uuid();
         $tracking = Str::upper(Str::random(12));
-        ConsultationRequest::create([
+        $case = ConsultationRequest::create([
+            'user_id' => $request->user()?->id,
             'technical_metadata' => [
                 'request_id' => (string) Str::uuid(),
                 'received_at_utc' => now()->utc()->toIso8601String(),
@@ -56,25 +59,34 @@ class ConsultationController extends Controller
             'safe_contact_time' => $data['safe_contact_time'] ?? null, 'description_encrypted' => Crypt::encryptString($data['description']), 'consented_at' => now(), 'status' => 'new', 'retain_until' => now()->addDays(90),
         ]);
 
-        return redirect()->route('consultation.success')->with('tracking_code', $tracking);
+        $request->session()->put('consultation_access_id', $case->id);
+        if ($case->user) {
+            app(\App\Services\PlatformMail::class)->send($case->user, 'request_received');
+        }
+        return redirect()->route('consultation.success')->with('tracking_code', $tracking)->with('request_number', $case->request_number);
     }
 
     public function success(): View
     {
         abort_unless(session()->has('tracking_code'), 404);
 
-        return view('consultation.success');
+        $case = ConsultationRequest::findOrFail(session('consultation_access_id'));
+        return view('consultation.success', ['case' => $case, 'accessLink' => $this->accessLink($case)]);
     }
 
-    public function showTracking(): View
+    public function showTracking(Request $request): View
     {
         $case = ConsultationRequest::find(session('consultation_access_id'));
-        return view('consultation.track', ['case' => $case, 'searched' => (bool) $case]);
+        return $this->trackingView($request, $case, (bool) $case);
     }
 
     public function track(Request $request): View
     {
-        $data = $request->validate(['tracking_code' => ['required', 'string', 'size:12']]);
+        $request->merge(['tracking_code' => Str::upper(preg_replace('/\s+/', '', (string) $request->input('tracking_code')))]);
+        $data = $request->validate(['tracking_code' => ['required', 'string', 'size:12']], [
+            'tracking_code.required' => 'ألصق رمز الدخول السري الذي ظهر عند إرسال الطلب.',
+            'tracking_code.size' => 'هذا الحقل للرمز السري المكون من 12 حرفًا ورقمًا. إذا لديك حساب، اختر طلبك من القائمة دون إدخال رمز.',
+        ]);
         $case = ConsultationRequest::where('tracking_hash', hash('sha256', Str::upper($data['tracking_code'])))->first();
         $request->session()->forget('consultation_access_id');
         if ($case) {
@@ -82,16 +94,76 @@ class ConsultationController extends Controller
             $request->session()->put('consultation_access_id', $case->id);
         }
 
-        return view('consultation.track', ['case' => $case, 'searched' => true]);
+        return $this->trackingView($request, $case, true);
+    }
+
+    private function accessLink(ConsultationRequest $case): string
+    {
+        return URL::temporarySignedRoute('consultation.open', now()->addDays(30), ['consultationRequest' => $case->id]);
+    }
+
+    private function trackingView(Request $request, ?ConsultationRequest $case, bool $searched): View
+    {
+        return view('consultation.track', [
+            'case' => $case, 'searched' => $searched,
+            'memberRequests' => $request->user()?->consultationRequests()->latest()->get() ?? collect(),
+            'accessLink' => $case ? $this->accessLink($case) : null,
+        ]);
+    }
+
+    public function openLink(Request $request, ConsultationRequest $consultationRequest): RedirectResponse
+    {
+        $request->session()->regenerate();
+        $request->session()->put('consultation_access_id', $consultationRequest->id);
+        return redirect()->route('consultation.track');
+    }
+
+    public function forget(Request $request): RedirectResponse
+    {
+        $request->session()->forget('consultation_access_id');
+        return redirect()->route('consultation.track');
     }
 
     public function reply(Request $request): RedirectResponse
     {
-        $case = ConsultationRequest::findOrFail(session('consultation_access_id'));
-        abort_if($case->status === 'closed', 422, 'الطلب مغلق');
         $data = $request->validate(['body' => ['required', 'string', 'min:3', 'max:5000']]);
-        $case->messages()->create(['sender' => 'requester', 'body' => $data['body']]);
-        $case->update(['status' => 'in_review']);
+        DB::transaction(function () use ($data) {
+            $case = ConsultationRequest::lockForUpdate()->findOrFail(session('consultation_access_id'));
+            abort_if($case->isEnded(), 422, 'الطلب منتهٍ أو مغلق');
+            $case->messages()->create(['sender' => 'requester', 'body' => $data['body']]);
+            $case->update(['status' => 'in_review']);
+        });
         return redirect()->route('consultation.track')->with('success', 'تم إرسال رسالتك للفريق');
+    }
+
+    public function close(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['status' => ['required', 'in:completed,closed']]);
+        DB::transaction(function () use ($data) {
+            $case = ConsultationRequest::lockForUpdate()->findOrFail(session('consultation_access_id'));
+            if (! $case->isEnded()) {
+                $case->update(['status' => $data['status'], 'closed_by_role' => 'requester']);
+            }
+        });
+        return redirect()->route('consultation.track')->with('success', 'تم إنهاء الطلب. يسعدنا تقييمك للخدمة.');
+    }
+
+    public function rate(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['rating' => ['required', 'integer', 'between:1,5'], 'comment' => ['nullable', 'string', 'max:2000']]);
+        DB::transaction(function () use ($data) {
+            $case = ConsultationRequest::lockForUpdate()->findOrFail(session('consultation_access_id'));
+            abort_unless($case->isEnded(), 422, 'التقييم متاح بعد إنهاء الطلب فقط');
+            abort_if($case->rating !== null, 422, 'تم تقييم هذا الطلب مسبقًا');
+            $case->update(['rating' => $data['rating'], 'rating_comment' => $data['comment'] ?? null, 'rated_at' => now()]);
+        });
+        return redirect()->route('consultation.track')->with('success', 'شكرًا لك، تم حفظ تقييمك للخدمة.');
+    }
+
+    public function memberRequest(Request $request, ConsultationRequest $consultationRequest): RedirectResponse
+    {
+        abort_unless($consultationRequest->user_id === $request->user()->id, 404);
+        $request->session()->put('consultation_access_id', $consultationRequest->id);
+        return redirect()->route('consultation.track');
     }
 }

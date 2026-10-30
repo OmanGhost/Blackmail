@@ -12,6 +12,10 @@ class ConsultationRequestInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            Section::make('حساب صاحب الطلب')->schema([
+                TextEntry::make('user.name')->label('المستخدم')->placeholder('زائر دون حساب'),
+                TextEntry::make('user.email')->label('البريد')->placeholder('غير مرتبط بحساب'),
+            ])->columns(2),
             Section::make('السجل التقني للطلب')->description('بيانات اتصال مساندة للمراجعة؛ المتصفح واللغة بيانات يرسلها العميل ولا تثبت الهوية.')->collapsed()->columns(2)
                 ->visible(fn (): bool => auth()->user()?->hasRole('super-admin') ?? false)
                 ->schema([
@@ -31,9 +35,9 @@ class ConsultationRequestInfolist
                 ]),
             ]),
             Section::make('ملخص الطلب')->columns(4)->schema([
-                TextEntry::make('public_id')->label('رقم الطلب')->copyable(),
+                TextEntry::make('request_number')->label('رقم الطلب')->copyable(),
                 TextEntry::make('urgency')->label('الأولوية')->badge()->formatStateUsing(fn (string $state): string => ['normal' => 'عادي', 'urgent' => 'عاجل', 'critical' => 'حرج'][$state] ?? $state)->color(fn (string $state): string => match ($state) { 'critical' => 'danger', 'urgent' => 'warning', default => 'gray' }),
-                TextEntry::make('status')->label('الحالة')->badge()->formatStateUsing(fn (string $state): string => ['new' => 'جديد', 'in_review' => 'قيد المراجعة', 'contacted' => 'تم التواصل', 'closed' => 'مغلق'][$state] ?? $state),
+                TextEntry::make('status')->label('الحالة')->badge()->formatStateUsing(fn (string $state): string => \App\Models\ConsultationRequest::statusOptions()[$state] ?? $state),
                 TextEntry::make('created_at')->label('تاريخ الاستلام')->dateTime(),
                 TextEntry::make('category')->label('نوع المساعدة'),
                 TextEntry::make('incident_stage')->label('مرحلة الحالة')->placeholder('غير محدد'),
@@ -47,6 +51,21 @@ class ConsultationRequestInfolist
             ]),
             Section::make('تفاصيل الحالة')->schema([
                 TextEntry::make('description')->label('وصف الحالة')->prose()->columnSpanFull(),
+            ]),
+            Section::make('إغلاق الطلب وتقييم المستخدم')->columns(2)->schema([
+                TextEntry::make('closed_at')->label('وقت الإغلاق / الانتهاء')->dateTime()->placeholder('الطلب مفتوح'),
+                TextEntry::make('closed_by_role')->label('تم الإغلاق بواسطة')->formatStateUsing(fn (string $state) => $state === 'requester' ? 'صاحب الطلب' : 'الإدارة')->placeholder('—'),
+                TextEntry::make('rating')->label('تقييم المستخدم من 5')->placeholder('لم يُقيّم بعد'),
+                TextEntry::make('rated_at')->label('وقت التقييم')->dateTime()->placeholder('—'),
+                TextEntry::make('rating_comment')->label('تعليق المستخدم')->placeholder('لا يوجد تعليق')->columnSpanFull(),
+            ]),
+            Section::make('سجل حالات الطلب')->collapsed()->schema([
+                RepeatableEntry::make('statusHistory')->label('التغييرات')->columns(4)->schema([
+                    TextEntry::make('from_status')->label('من')->formatStateUsing(fn (string $state) => \App\Models\ConsultationRequest::statusOptions()[$state] ?? $state),
+                    TextEntry::make('to_status')->label('إلى')->formatStateUsing(fn (string $state) => \App\Models\ConsultationRequest::statusOptions()[$state] ?? $state),
+                    TextEntry::make('changedBy.name')->label('بواسطة')->placeholder('صاحب الطلب / النظام'),
+                    TextEntry::make('created_at')->label('الوقت')->dateTime(),
+                ]),
             ]),
             Section::make('الخصوصية والاحتفاظ')->columns(2)->collapsed()->schema([
                 TextEntry::make('consented_at')->label('وقت الموافقة')->dateTime(),
