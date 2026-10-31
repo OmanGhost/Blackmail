@@ -7,6 +7,13 @@
 @theme { --font-sans:'Cairo',ui-sans-serif,system-ui,sans-serif; --color-navy:#102A43; --color-brand:#2563EB; --color-success:#10B981; --color-surface:#F3F6FA; --color-danger:#DC2626; }
 @custom-variant dark (&:where(.dark, .dark *));
 html { scroll-behavior:smooth; }
+.article-share { display: grid; gap: .8rem; margin-top: 1.5rem; padding: 1rem; border: 1px solid #cbd5e1; border-radius: 1rem; background: #f8fafc; }
+.share-button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: .7rem; padding: .65rem 1rem; font-size: .85rem; font-weight: 700; background: white; color: #102a43; }
+.share-button:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+.share-button:hover { background: #eff6ff; }
+.share-whatsapp { border-color: #a7f3d0; color: #065f46; background: #ecfdf5; }
+.article-share [hidden] { display: none; }
+.dark .article-share { background: #172b42; border-color: #475569; }
 .statistics-circles { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 1rem; margin-block: 1.5rem; }
 .statistics-item { display: flex; flex-direction: column-reverse; align-items: center; gap: .65rem; text-align: center; }
 .statistics-circle { width: 6.5rem; height: 6.5rem; display: grid; place-items: center; border: 3px solid #60a5fa; border-radius: 50%; background: radial-gradient(circle at 30% 20%, #284d70, #132f49); box-shadow: 0 0 0 5px rgb(96 165 250 / .08); font-size: clamp(1rem, 2vw, 1.7rem); font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; padding: .3rem; }

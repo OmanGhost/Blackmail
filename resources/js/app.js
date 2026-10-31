@@ -1,5 +1,6 @@
 import './bootstrap';
 import './help-guide';
+import './article-share';
 
 document.querySelectorAll('[data-country-contact]').forEach((field) => {
     const select = field.querySelector('select');

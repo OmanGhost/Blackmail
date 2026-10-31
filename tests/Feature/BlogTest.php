@@ -24,6 +24,12 @@ class BlogTest extends TestCase
         $this->get('/blog?type=video')->assertOk()->assertSee('newest-video')->assertDontSee('older-article');
         $this->get('/blog?q=older')->assertOk()->assertSee('older-article')->assertDontSee('newest-video');
         $this->get('/blog/newest-video')->assertOk()->assertSee($video->video_url)->assertDontSee('<script>bad()',false);
+        $shareUrl=route('articles.show',$video);
+        $this->get('/blog/newest-video?private_parameter=do-not-share')->assertOk()
+            ->assertSee('https://wa.me/?text='.rawurlencode('newest-video'."\n".$shareUrl),false)
+            ->assertSee('https://x.com/intent/tweet?')
+            ->assertSee('data-url="'.$shareUrl.'"',false)
+            ->assertSee('data-copy-link',false)->assertDontSee('do-not-share');
         $this->get('/blog/future-news')->assertNotFound();
         $this->get('/blog/draft-news')->assertNotFound();
         $this->get('/encyclopedia')->assertRedirect(route('blog'));

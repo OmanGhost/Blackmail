@@ -1,6 +1,6 @@
 # منصة إبتزاز
 
-Current release: **v1.6.1**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
+Current release: **v1.6.2**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
 
 للنشر في المدونة: افتح الإدارة ← المحتوى ← المدونة ← إنشاء، ثم اختر النوع (مقال/خبر/فيديو) والتصنيف والكاتب وأضف صورة الغلاف والمحتوى والترجمات داخل النموذج نفسه. استخدم رابطًا مختصرًا فريدًا بالحروف الإنجليزية والأرقام والشرطات. للفيديو أضف رابط المشاهدة ووصفه. اختر «منشور» وحدد وقت النشر؛ الموعد المستقبلي يجدول ظهور المنشور. احتفظ بالمسودة إذا لم يكن المحتوى جاهزًا.
 
