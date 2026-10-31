@@ -42,5 +42,7 @@ class BlogTest extends TestCase
         $editor->fillForm(['post_type'=>'video','video_url'=>'https://example.test/new-video','translations'=>$translations])->call('save')->assertHasNoFormErrors();
         $this->assertSame('video',$post->fresh()->post_type);
         $this->assertSame('Updated blog title',$post->translations()->first()->title);
+        $editor->fillForm(['published_at'=>'2026-10-31 12:00:00'])->call('save')->assertHasNoFormErrors();
+        $this->assertSame('2026-10-31 08:00:00',$post->fresh()->published_at->format('Y-m-d H:i:s'));
     }
 }

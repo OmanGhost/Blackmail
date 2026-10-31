@@ -18,6 +18,11 @@ class ArticlesTable
             ->columns([
                 TextColumn::make('translations.title')->label(__('blog.post_title'))->searchable()->limit(50),
                 TextColumn::make('post_type')->label(__('blog.type'))->badge()->formatStateUsing(fn($state)=>\App\Models\Article::typeOptions()[$state]??$state),
+                TextColumn::make('visibility')->label(__('blog.visibility'))->state(fn($record)=>
+                    $record->status!=='published' ? __('blog.'.$record->status) :
+                    (!$record->translations()->exists() ? __('blog.missing_content') :
+                    (!$record->published_at ? __('blog.missing_date') :
+                    ($record->published_at->isFuture() ? __('blog.scheduled') : __('blog.visible')))))->badge(),
                 TextColumn::make(app()->getLocale() === 'en' ? 'category.name_en' : 'category.name_ar')
                     ->label(__('admin.fields.category'))
                     ->searchable(),
@@ -31,6 +36,7 @@ class ArticlesTable
                 TextColumn::make('status')
                     ->badge()->formatStateUsing(fn($state)=>__('blog.'.(['published'=>'published_status'][$state]??$state))),
                 TextColumn::make('published_at')
+                    ->timezone('Asia/Muscat')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('last_reviewed_at')
@@ -49,6 +55,9 @@ class ArticlesTable
                 //
             ])
             ->recordActions([
+                \Filament\Actions\Action::make('publish_now')->label(__('blog.publish_now'))->requiresConfirmation()
+                    ->visible(fn($record)=>$record->status==='published' && $record->translations()->exists() && (!$record->published_at || $record->published_at->isFuture()))
+                    ->action(fn($record)=>$record->update(['published_at'=>now()])),
                 \Filament\Actions\Action::make('preview')->label(__('blog.read'))->url(fn($record)=>route('articles.show',$record))->openUrlInNewTab()->visible(fn($record)=>$record->status==='published' && $record->published_at?->isPast()),
                 EditAction::make(),
             ])

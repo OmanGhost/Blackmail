@@ -45,7 +45,7 @@ class ArticleForm
                     ->options(['draft' => __('blog.draft'), 'review' => __('blog.review'), 'published' => __('blog.published_status'), 'archived' => __('blog.archived')])
                     ->default('draft')
                     ->required(),
-                DateTimePicker::make('published_at')->required(fn ($get)=>$get('status')==='published'),
+                DateTimePicker::make('published_at')->timezone('Asia/Muscat')->default(now())->helperText(__('blog.timezone_hint'))->required(fn ($get)=>$get('status')==='published'),
                 DatePicker::make('last_reviewed_at'),
                 Repeater::make('translations')->label(__('blog.content'))->relationship()->schema([
                     Select::make('locale')->label(__('blog.locale'))->options(['ar'=>'العربية','en'=>'English'])->default('ar')->required()->disableOptionsWhenSelectedInSiblingRepeaterItems(),
