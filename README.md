@@ -1,6 +1,8 @@
 # منصة إبتزاز
 
-Current release: **v1.5.1**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
+Current release: **v1.6.0**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
+
+للنشر في المدونة: افتح الإدارة ← المحتوى ← المدونة ← إنشاء، ثم اختر النوع (مقال/خبر/فيديو) والتصنيف والكاتب وأضف صورة الغلاف والمحتوى والترجمات داخل النموذج نفسه. استخدم رابطًا مختصرًا فريدًا بالحروف الإنجليزية والأرقام والشرطات. للفيديو أضف رابط المشاهدة ووصفه. اختر «منشور» وحدد وقت النشر؛ الموعد المستقبلي يجدول ظهور المنشور. احتفظ بالمسودة إذا لم يكن المحتوى جاهزًا.
 
 Arabic-first, privacy-conscious anti-blackmail education and guidance platform built with Laravel 12, Livewire 3, Filament 4, Tailwind CSS 4, and Alpine.js.
 

@@ -11,7 +11,7 @@ class CountPublicVisitors
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        $publicRoutes = ['home','help','encyclopedia','categories.show','articles.show','countries','countries.show','protection','tools','consultation','blackmail.help','contact'];
+        $publicRoutes = ['home','help','blog','encyclopedia','categories.show','articles.show','countries','countries.show','protection','tools','consultation','blackmail.help','contact'];
         if ($request->isMethod('GET') && $response->isSuccessful()
             && in_array($request->route()?->getName(), $publicRoutes, true)
             && !preg_match('/bot|crawler|spider|slurp|headless/i', $request->userAgent() ?? '')

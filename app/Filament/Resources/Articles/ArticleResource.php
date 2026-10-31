@@ -32,12 +32,12 @@ class ArticleResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('admin.resources.articles');
+        return __('blog.title');
     }
 
     public static function getModelLabel(): string
     {
-        return __('admin.resources.articles');
+        return __('blog.title');
     }
 
     public static function canAccess(): bool

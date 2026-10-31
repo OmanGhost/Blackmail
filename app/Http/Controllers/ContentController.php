@@ -23,7 +23,10 @@ class ContentController extends Controller
     }
     public function encyclopedia(Request $request): View
     {
-        $articles = Article::published()->with(['translations', 'category'])->when($request->filled('q'), fn ($q) => $q->whereHas('translations', fn ($t) => $t->where('title', 'like', '%'.$request->string('q').'%')))->paginate(9)->withQueryString();
+        $articles = Article::published()->whereHas('translations')->with(['translations', 'category', 'author'])
+            ->when(in_array($request->query('type'), ['article','news','video']), fn ($q) => $q->where('post_type',$request->query('type')))
+            ->when($request->filled('q'), fn ($q) => $q->whereHas('translations', fn ($t) => $t->where('title', 'like', '%'.$request->string('q').'%')))
+            ->orderByDesc('published_at')->orderByDesc('id')->paginate(9)->withQueryString();
 
         return view('content.encyclopedia', compact('articles'));
     }
@@ -31,7 +34,7 @@ class ContentController extends Controller
     public function article(Article $article): View
     {
         abort_unless($article->status === 'published' && $article->published_at?->isPast(), 404);
-        $translation = $article->translations()->where('locale', app()->getLocale())->first() ?? $article->translations()->where('locale', 'ar')->firstOrFail();
+        $translation = $article->translations()->where('locale', app()->getLocale())->first() ?? $article->translations()->where('locale', 'ar')->first() ?? $article->translations()->firstOrFail();
 
         return view('content.article', compact('article', 'translation'));
     }

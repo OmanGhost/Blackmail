@@ -27,9 +27,11 @@ Route::get('/help', function () {
     return view('help', ['countries' => \App\Models\Country::with(['reportingAuthorities' => fn ($query) => $query
         ->where('is_published', true)->where('verification_status', 'verified')])->orderBy('name_ar')->get()]);
 })->name('help');
-Route::get('/encyclopedia', [ContentController::class, 'encyclopedia'])->name('encyclopedia');
+Route::get('/blog', [ContentController::class, 'encyclopedia'])->name('blog');
+Route::get('/encyclopedia', fn () => redirect()->route('blog', request()->query(), 301))->name('encyclopedia');
 Route::get('/categories/{category:slug}', [ContentController::class, 'category'])->name('categories.show');
-Route::get('/encyclopedia/{article:slug}', [ContentController::class, 'article'])->name('articles.show');
+Route::get('/blog/{article:slug}', [ContentController::class, 'article'])->name('articles.show');
+Route::get('/encyclopedia/{article:slug}', fn (\App\Models\Article $article) => redirect()->route('articles.show', $article, 301));
 Route::get('/countries', [ContentController::class, 'countries'])->name('countries');
 Route::get('/directory-request', [\App\Http\Controllers\DirectoryRequestController::class,'create'])->name('directory.requests.create');
 Route::post('/directory-request', [\App\Http\Controllers\DirectoryRequestController::class,'store'])->middleware('throttle:3,10')->name('directory.requests.store');

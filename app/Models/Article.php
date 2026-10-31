@@ -17,6 +17,8 @@ class Article extends Model
 
     protected $casts = ['published_at' => 'datetime', 'last_reviewed_at' => 'date'];
 
+    public static function typeOptions(): array { return ['article'=>__('blog.article'),'news'=>__('blog.news'),'video'=>__('blog.video')]; }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
