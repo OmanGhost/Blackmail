@@ -9,7 +9,7 @@ class ValidateAuthenticatedSessions
 {
     public function handle(Request $request, Closure $next)
     {
-        Auth::shouldUse($request->is('admin','admin/*')?'admin':'web');
+        Auth::shouldUse(\App\Support\PanelAccess::matches($request)?'admin':'web');
         foreach (['web','admin'] as $name) {
             $guard=Auth::guard($name);
             if (!$guard->check()) continue;
@@ -20,7 +20,7 @@ class ValidateAuthenticatedSessions
                 Auth::guard('admin')->logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
-                return redirect($request->is('admin','admin/*') ? '/admin/login' : route('login'));
+                return redirect(\App\Support\PanelAccess::matches($request) ? \App\Support\PanelAccess::loginUrl() : route('login'));
             }
         }
         return $next($request);

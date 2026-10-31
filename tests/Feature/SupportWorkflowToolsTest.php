@@ -110,13 +110,13 @@ class SupportWorkflowToolsTest extends TestCase
     public function test_operations_and_privacy_admin_are_restricted_and_render_for_admin(): void
     {
         $member = User::factory()->create(['is_active'=>true]);
-        $this->actingAs($member,'admin')->get('/admin/operations')->assertForbidden();
+        $this->actingAs($member,'admin')->get($this->panelPath('/operations'))->assertForbidden();
         $admin = User::factory()->create(['is_active'=>true]);
         $role = Role::create(['name'=>'super-admin','label_ar'=>'مدير']);
         $admin->roles()->attach($role);
         $this->withoutMiddleware(\Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled::class);
-        $this->actingAs($admin,'admin')->get('/admin/operations')->assertOk();
-        $this->get('/admin/privacy-requests')->assertOk();
+        $this->actingAs($admin,'admin')->get($this->panelPath('/operations'))->assertOk();
+        $this->get($this->panelPath('/privacy-requests'))->assertOk();
     }
 
     public function test_expired_recovery_links_cannot_open_a_request(): void

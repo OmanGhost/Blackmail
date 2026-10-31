@@ -6,6 +6,10 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function panelPath(string $suffix=''): string
+    {
+        return '/'.\App\Support\PanelAccess::path().$suffix;
+    }
     public function actingAs(\Illuminate\Contracts\Auth\Authenticatable $user, $guard = null)
     {
         parent::actingAs($user,$guard);

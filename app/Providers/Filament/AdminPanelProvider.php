@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            ->path(\App\Support\PanelAccess::path())
             ->authGuard('admin')
             ->authenticatedRoutes(function () {
                 \Illuminate\Support\Facades\Route::get('/secure-evidence/{submission}', [\App\Http\Controllers\SecureEvidenceController::class,'staffShow'])->name('evidence.show');

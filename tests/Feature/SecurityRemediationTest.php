@@ -27,7 +27,7 @@ class SecurityRemediationTest extends TestCase
         preg_match('/<bdi dir="ltr">(\d+) \+ (\d+)<\/bdi>/',$html,$numbers);
         $this->post('/login',['email'=>$admin->email,'password'=>'password','remember'=>1,'human_token'=>$token[1],'human_answer'=>(string)($numbers[1]+$numbers[2])])->assertRedirect();
         $this->assertAuthenticatedAs($admin,'web');$this->assertGuest('admin');
-        foreach(['/admin','/admin/consultation-requests','/admin/secure-evidence/1'] as $url) $this->get($url)->assertRedirect('/admin/login');
+        foreach([$this->panelPath(''),$this->panelPath('/consultation-requests'),$this->panelPath('/secure-evidence/1')] as $url) $this->get($url)->assertRedirect($this->panelPath('/login'));
     }
 
     public function test_panel_login_requires_otp_and_correct_otp_preserves_legitimate_admin_access(): void
@@ -41,12 +41,12 @@ class SecurityRemediationTest extends TestCase
         $code=\Filament\Auth\MultiFactor\App\AppAuthentication::make()->getCurrentCode($admin);
         $login->set('data.multiFactor.app.code',$code)->call('authenticate')->assertHasNoErrors();
         $this->assertAuthenticatedAs($admin,'admin');
-        $this->get('/admin/consultation-requests')->assertOk();
+        $this->get($this->panelPath('/consultation-requests'))->assertOk();
         Livewire::test(\App\Filament\Auth\EditProfile::class)
             ->fillForm(['password'=>'NewAdminPassword123','passwordConfirmation'=>'NewAdminPassword123','currentPassword'=>'password'])
             ->call('save')->assertHasNoFormErrors();
         $this->assertSame((int)$admin->fresh()->auth_version,(int)session('auth_versions.admin'));
-        $this->get('/admin/consultation-requests')->assertOk();
+        $this->get($this->panelPath('/consultation-requests'))->assertOk();
         $this->post('/quick-exit')->assertRedirect(route('neutral'));
         $this->assertGuest('web');$this->assertGuest('admin');
     }

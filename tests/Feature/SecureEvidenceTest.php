@@ -76,11 +76,11 @@ class SecureEvidenceTest extends TestCase
         $this->withoutMiddleware(\Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled::class);
         $support=User::factory()->create(['is_active'=>true]);
         $support->roles()->attach(Role::create(['name'=>'support-agent','label_ar'=>'دعم']));
-        $this->actingAs($support,'admin')->get('/admin/secure-evidence/'.$submission->id)->assertForbidden();
+        $this->actingAs($support,'admin')->get($this->panelPath('/secure-evidence/').$submission->id)->assertForbidden();
         $admin=User::factory()->create(['is_active'=>true]);
         $admin->roles()->attach(Role::create(['name'=>'super-admin','label_ar'=>'مدير']));
-        $this->actingAs($admin,'admin')->get('/admin/secure-evidence/'.$submission->id)->assertOk();
-        $this->get('/admin/secure-evidence/'.$submission->id.'/download')->assertOk()->assertHeader('Cache-Control','no-store, private');
+        $this->actingAs($admin,'admin')->get($this->panelPath('/secure-evidence/').$submission->id)->assertOk();
+        $this->get($this->panelPath('/secure-evidence/').$submission->id.'/download')->assertOk()->assertHeader('Cache-Control','no-store, private');
         $this->assertSame(2,DB::table('evidence_access_logs')->where('user_id',$admin->id)->count());
     }
 
