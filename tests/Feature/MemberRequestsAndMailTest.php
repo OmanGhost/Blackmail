@@ -95,7 +95,7 @@ class MemberRequestsAndMailTest extends TestCase
         $role = Role::create(['name' => 'super-admin', 'label_ar' => 'مدير']);
         $admin->roles()->attach($role);
         $this->withoutMiddleware(\Filament\Auth\MultiFactor\Http\Middleware\EnsureMultiFactorAuthenticationIsEnabled::class);
-        $this->actingAs($admin)->get('/admin/users/'.$member->id)->assertOk()->assertSee('contact@example.test');
+        $this->actingAs($admin,'admin')->get('/admin/users/'.$member->id)->assertOk()->assertSee('contact@example.test');
         $this->get('/admin/mail-settings')->assertOk();
         $this->get('/admin/email-templates')->assertOk();
     }

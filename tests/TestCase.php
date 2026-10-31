@@ -6,6 +6,13 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    public function actingAs(\Illuminate\Contracts\Auth\Authenticatable $user, $guard = null)
+    {
+        parent::actingAs($user,$guard);
+        // Simulate an already authenticated session; real login/revocation tests use HTTP login.
+        session()->put('auth_versions.'.($guard??config('auth.defaults.guard')), (int)$user->auth_version);
+        return $this;
+    }
     protected function setUp(): void
     {
         parent::setUp();

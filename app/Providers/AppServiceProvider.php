@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event): void {
             $event->user->forceFill(['last_login_at' => now()])->save();
+            session()->put('auth_versions.'.$event->guard, (int)$event->user->auth_version);
         });
         foreach ([TextInput::class, Textarea::class, Select::class, Toggle::class, DatePicker::class, DateTimePicker::class, FileUpload::class, KeyValue::class, TextColumn::class, IconColumn::class] as $component) {
             $component::configureUsing(fn ($field) => $field->translateLabel());

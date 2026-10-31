@@ -8,6 +8,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditReportingAuthority extends EditRecord
 {
+    use \App\Filament\Concerns\ReviewsDirectoryRecords;
     protected static string $resource = ReportingAuthorityResource::class;
 
     protected function getHeaderActions(): array

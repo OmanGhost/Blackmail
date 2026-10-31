@@ -33,7 +33,8 @@ class SupportToolsController extends Controller
 
     public function quickExit(Request $request)
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
+        Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('neutral')->withHeaders(['Cache-Control'=>'no-store, private','Referrer-Policy'=>'no-referrer']);

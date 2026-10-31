@@ -115,13 +115,15 @@ class AuthController extends Controller
     {
         $data = $request->validate(['current_password' => ['required', 'current_password'], 'password' => ['required', 'confirmed', Password::min(10)->letters()->mixedCase()->numbers()]]);
         $request->user()->update(['password' => $data['password']]);
+        \App\Support\SessionCredentials::refreshCurrent($request->user());
 
         return redirect()->route('account', ['tab' => 'security'])->with('success', 'تم تغيير كلمة المرور.');
     }
 
     public function logout(Request $request): RedirectResponse
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
+        Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

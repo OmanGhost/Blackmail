@@ -31,12 +31,13 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->authGuard('admin')
             ->authenticatedRoutes(function () {
                 \Illuminate\Support\Facades\Route::get('/secure-evidence/{submission}', [\App\Http\Controllers\SecureEvidenceController::class,'staffShow'])->name('evidence.show');
                 \Illuminate\Support\Facades\Route::get('/secure-evidence/{submission}/download', [\App\Http\Controllers\SecureEvidenceController::class,'staffDownload'])->name('evidence.download');
             })
             ->login()
-            ->profile()
+            ->profile(\App\Filament\Auth\EditProfile::class)
             ->multiFactorAuthentication(AppAuthentication::make()->recoverable(), isRequired: true)
             ->brandName(fn () => config('app.name').' — '.(app()->getLocale()==='en' ? 'Administration' : 'الإدارة'))
             ->viteTheme('resources/css/filament/admin/theme.css')
@@ -60,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                \App\Http\Middleware\ValidateAuthenticatedSessions::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,

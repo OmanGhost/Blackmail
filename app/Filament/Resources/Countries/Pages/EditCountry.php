@@ -8,6 +8,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditCountry extends EditRecord
 {
+    use \App\Filament\Concerns\ReviewsDirectoryRecords;
     protected static string $resource = CountryResource::class;
 
     protected function getHeaderActions(): array

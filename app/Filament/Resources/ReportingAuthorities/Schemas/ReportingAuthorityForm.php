@@ -42,7 +42,7 @@ class ReportingAuthorityForm
                     ])
                     ->default('unverified')
                     ->required(),
-                DatePicker::make('last_verified_at'),
+                DatePicker::make('last_verified_at')->disabled()->dehydrated(false),
                 Toggle::make('is_published')
                     ->required(),
             ]);

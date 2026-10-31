@@ -32,7 +32,7 @@ class MembershipAndConsultationTest extends TestCase
         $role = Role::create(['name' => 'member', 'label_ar' => 'عضو']);
         $user->roles()->attach($role);
         $this->assertFalse($user->canAccessPanel(Filament::getPanel('admin')));
-        $this->actingAs($user)->get('/admin')->assertForbidden();
+        $this->actingAs($user,'admin')->get('/admin')->assertForbidden();
     }
 
     public function test_super_admin_is_required_to_set_up_mfa_before_dashboard(): void
@@ -40,7 +40,7 @@ class MembershipAndConsultationTest extends TestCase
         $user = User::factory()->create(['is_active' => true]);
         $role = Role::create(['name' => 'super-admin', 'label_ar' => 'مدير النظام']);
         $user->roles()->attach($role);
-        $this->actingAs($user)->get('/admin')->assertRedirect();
+        $this->actingAs($user,'admin')->get('/admin')->assertRedirect();
     }
 
     public function test_consultation_is_encrypted_and_tracking_code_is_not_stored_plaintext(): void

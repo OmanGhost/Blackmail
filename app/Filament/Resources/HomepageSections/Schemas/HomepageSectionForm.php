@@ -36,12 +36,14 @@ class HomepageSectionForm
                     ->label('نص الزر الرئيسي')
                     ->default(null),
                 TextInput::make('primary_button_url')
+                    ->rules([new \App\Rules\SafeNavigationUrl])->maxLength(255)
                     ->label('رابط الزر الرئيسي')
                     ->default(null),
                 TextInput::make('secondary_button_text_ar')
                     ->label('نص الزر الثانوي')
                     ->default(null),
                 TextInput::make('secondary_button_url')
+                    ->rules([new \App\Rules\SafeNavigationUrl])->maxLength(255)
                     ->label('رابط الزر الثانوي')
                     ->default(null),
                 TextInput::make('eyebrow_ar')

@@ -42,8 +42,9 @@ class CountryForm
                     ])
                     ->required()
                     ->default('unverified'),
-                DatePicker::make('last_verified_at'),
+                DatePicker::make('last_verified_at')->disabled()->dehydrated(false),
                 Select::make('verified_by')
+                    ->disabled()->dehydrated(false)
                     ->label(__('admin.fields.verified_by'))
                     ->relationship('verifier', 'name')
                     ->searchable()
@@ -51,7 +52,7 @@ class CountryForm
                     ->nullable()
                     ->dehydrateStateUsing(fn (mixed $state): ?int => filled($state) && (int) $state > 0 ? (int) $state : null),
                 Toggle::make('is_published')
-                    ->required(),
+                    ->required()->helperText(app()->getLocale()==='en'?'Verification is recorded by the server. Editing verified contact data requires a new review.':'يسجل النظام المراجع وتاريخ التحقق تلقائيًا. تعديل بيانات متحققة يعيدها للمراجعة ويوقف نشرها.'),
             ]);
     }
 }

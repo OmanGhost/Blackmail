@@ -20,6 +20,18 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     /** @use HasFactory<UserFactory> */
     use HasFactory, InteractsWithAppAuthentication, InteractsWithAppAuthenticationRecovery, Notifiable;
 
+    protected $attributes = ['auth_version'=>1];
+
+    protected static function booted(): void
+    {
+        static::updating(function (self $user): void {
+            if ($user->isDirty('password') || ($user->isDirty('is_active') && !$user->is_active)) {
+                $user->auth_version=(int)$user->getRawOriginal('auth_version')+1;
+                $user->remember_token=\Illuminate\Support\Str::random(60);
+            }
+        });
+    }
+
     /**
      * The attributes that are mass assignable.
      *
