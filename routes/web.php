@@ -60,6 +60,19 @@ Route::post('/locale', function (Request $request) {
     return back();
 })->middleware('throttle:10,1')->name('locale');
 
+Route::post('/visitor-country', function (Request $request) {
+    $validated = $request->validate(['country' => ['required', 'string', function ($attribute, $value, $fail) {
+        if ($value !== 'auto' && ! \App\Models\Country::where('code', $value)->exists()) {
+            $fail(__('validation.in', ['attribute' => $attribute]));
+        }
+    }]]);
+    $validated['country'] === 'auto'
+        ? $request->session()->forget(\App\Services\VisitorHotline::SESSION_CHOICE)
+        : $request->session()->put(\App\Services\VisitorHotline::SESSION_CHOICE, $validated['country']);
+
+    return back();
+})->middleware('throttle:10,1')->name('visitor-country');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');

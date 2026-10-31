@@ -16,6 +16,12 @@ class Country extends Model
 
     protected $casts = ['is_published' => 'boolean', 'last_verified_at' => 'date'];
 
+    protected static function booted(): void
+    {
+        static::saved(fn () => \App\Services\VisitorHotline::flush());
+        static::deleted(fn () => \App\Services\VisitorHotline::flush());
+    }
+
     public function reportingAuthorities(): HasMany
     {
         return $this->hasMany(ReportingAuthority::class);

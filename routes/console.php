@@ -50,3 +50,39 @@ Artisan::command('application:check-updates', function () {
     $this->info(__('updates.'.$service->displayStatus($result)));
 })->purpose('Check the latest stable application release without installing it');
 Schedule::command('application:check-updates')->twiceDaily(1,13)->withoutOverlapping();
+
+Artisan::command('geoip:update', function () {
+    $target = config('platform.geo.database');
+    \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($target));
+    $temp = $target.'.download';
+    foreach ([now(), now()->subMonthNoOverflow()] as $month) {
+        $url = 'https://download.db-ip.com/free/dbip-country-lite-'.$month->format('Y-m').'.mmdb.gz';
+        $response = \Illuminate\Support\Facades\Http::timeout(120)->withOptions(['allow_redirects' => false])->get($url);
+        if (! $response->successful()) {
+            continue;
+        }
+        $data = gzdecode($response->body());
+        if ($data === false || file_put_contents($temp, $data) === false) {
+            continue;
+        }
+        try {
+            $reader = new \MaxMind\Db\Reader($temp);
+            $type = $reader->metadata()->databaseType;
+            $reader->close();
+        } catch (\Throwable) {
+            $type = '';
+        }
+        if (! str_contains(strtolower($type), 'country')) {
+            @unlink($temp);
+            continue;
+        }
+        rename($temp, $target);
+        \App\Services\VisitorHotline::flush();
+        $this->info('Country database updated from '.$url);
+        return 0;
+    }
+    @unlink($temp);
+    $this->error('Could not download a valid country database. The header keeps showing the platform number until one is installed.');
+    return 1;
+})->purpose('Download the free DB-IP Lite country database used to pick the header phone number');
+Schedule::command('geoip:update')->monthlyOn(3, '04:00')->withoutOverlapping();

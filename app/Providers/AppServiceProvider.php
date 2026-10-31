@@ -34,6 +34,12 @@ class AppServiceProvider extends ServiceProvider
             session()->put('auth_versions.'.$event->guard, (int)$event->user->auth_version);
         });
         $this->serveLivewireFromSubfolder();
+        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view): void {
+            $version = \Illuminate\Support\Facades\Cache::get('visitor-hotline:version', 0);
+            $view->with('hotline', app(\App\Services\VisitorHotline::class)->resolve(request()));
+            $view->with('hotlineCountries', \Illuminate\Support\Facades\Cache::remember("visitor-hotline:{$version}:countries", 600,
+                fn () => \App\Models\Country::query()->orderBy('name_ar')->get(['code', 'name_ar', 'name_en'])->toArray()));
+        });
         \Illuminate\Pagination\Paginator::defaultView('pagination.site');
         \Illuminate\Pagination\Paginator::defaultSimpleView('pagination.site');
         foreach ([TextInput::class, Textarea::class, Select::class, Toggle::class, DatePicker::class, DateTimePicker::class, FileUpload::class, KeyValue::class, TextColumn::class, IconColumn::class] as $component) {

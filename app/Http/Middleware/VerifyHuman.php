@@ -13,7 +13,7 @@ class VerifyHuman
     {
         if (in_array($request->method(), ['POST','PUT','PATCH','DELETE'], true)
             && !\App\Support\PanelAccess::matches($request) && !$request->is('livewire/*')
-            && !$request->routeIs('locale','logout','quick-exit','consultation.forget')
+            && !$request->routeIs('locale','visitor-country','logout','quick-exit','consultation.forget')
             && app(HumanChallenge::class)->required($request)) {
             $key = 'human-check:'.hash('sha256', $request->session()->getId());
             if (RateLimiter::tooManyAttempts($key, 10)) {
