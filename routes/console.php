@@ -44,3 +44,9 @@ Artisan::command('consultations:purge-evidence', function () {
     $this->info("Removed expired content from {$count} secure submissions.");
 })->purpose('Delete expired encrypted evidence files and text');
 Schedule::command('consultations:purge-evidence')->daily();
+Artisan::command('application:check-updates', function () {
+    $service=app(\App\Services\ApplicationUpdates::class);
+    $result=$service->check(true);
+    $this->info(__('updates.'.$service->displayStatus($result)));
+})->purpose('Check the latest stable application release without installing it');
+Schedule::command('application:check-updates')->twiceDaily(1,13)->withoutOverlapping();

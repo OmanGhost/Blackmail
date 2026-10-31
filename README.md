@@ -1,6 +1,8 @@
 # منصة إبتزاز
 
-Current release: **v1.8.0**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
+Current release: **v1.9.0**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
+
+تذييل لوحة الإدارة يعرض `VERSION`. قسم «النظام ← إصدار التطبيق والتحديثات» متاح للمدير لقراءة آخر إصدار مستقر من GitHub. للمستودع الخاص أضف `GITHUB_UPDATE_TOKEN` إلى بيئة الخادم برمز Fine-grained محدود بمستودع `OmanGhost/Blackmail` وصلاحية `Contents: read`، ثم نفّذ `php artisan config:clear`. لا تستخدم رمز النشر واسع الصلاحيات داخل التطبيق. الفحص تلقائي عند فتح لوحة المدير ومخزّن 12 ساعة، مع زر فحص يدوي محدود بدقيقة. أمر `php artisan application:check-updates` مُجدول مرتين يوميًا عند تشغيل Laravel Scheduler. الفحص لا يثبت التحديثات تلقائيًا.
 
 مسار الإدارة يُحدد في `.env` عبر `ADMIN_PATH` (مقطع واحد من 8 إلى 64 حرفًا إنجليزيًا أو رقمًا أو شرطة، يبدأ بحرف). اختر قيمة خاصة بكل بيئة، ثم نفّذ `php artisan optimize:clear`. رابط الدخول هو `/<ADMIN_PATH>/login`، أما `/admin` ومساراته فتحوّل إلى الرئيسية. تغيير المسار طبقة إضافية ولا يغني عن الصلاحيات والمصادقة الثنائية.
 

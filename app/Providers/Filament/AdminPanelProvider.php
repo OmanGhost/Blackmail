@@ -44,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->topNavigation()
             ->maxContentWidth(Width::Full)
             ->renderHook(PanelsRenderHook::TOPBAR_END, fn (): string => view('filament.language-switcher')->render())
+            ->renderHook(PanelsRenderHook::FOOTER, fn (): string => \Livewire\Livewire::mount(\App\Livewire\SystemVersion::class))
             ->colors([
                 'primary' => Color::Indigo,
                 'success' => Color::Emerald,
