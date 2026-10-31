@@ -6,6 +6,12 @@ use Illuminate\Support\Str;
 
 class HumanChallenge
 {
+    /** Signed-in active members already passed a check at login, so they are not asked again. */
+    public function required(Request $request): bool
+    {
+        return ! $request->user('web')?->is_active;
+    }
+
     public function issue(Request $request, string $action): array
     {
         $a = random_int(1, 9);

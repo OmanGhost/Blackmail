@@ -50,6 +50,22 @@ class HumanVerificationTest extends TestCase
         $this->post('/consultation',$this->payload()+$valid)->assertRedirect(route('consultation.success'));
     }
 
+    public function test_signed_in_members_skip_the_check_but_guests_and_inactive_accounts_do_not(): void
+    {
+        $member=\App\Models\User::factory()->create(['is_active'=>true]);
+        $this->actingAs($member)->get('/account')->assertOk()->assertDontSee('human_token',false)->assertDontSee('التحقق من المرسل');
+        $this->actingAs($member)->get('/consultation')->assertOk()->assertDontSee('human_token',false);
+        $this->actingAs($member)->post('/consultation',$this->payload())->assertSessionHasNoErrors()->assertRedirect(route('consultation.success'));
+        $this->assertDatabaseCount('consultation_requests',1);
+
+        $inactive=\App\Models\User::factory()->create(['is_active'=>false]);
+        $this->assertTrue(app(\App\Services\HumanChallenge::class)->required(\Illuminate\Http\Request::create('/')->setUserResolver(fn () => $inactive)));
+
+        auth()->guard('web')->logout();
+        $this->get('/consultation')->assertSee('human_token',false);
+        $this->post('/consultation',$this->payload())->assertSessionHasErrors('human_answer');
+    }
+
     public function test_expired_and_honeypot_submissions_are_rejected_and_quick_exit_is_unblocked(): void
     {
         $valid=$this->challenge();

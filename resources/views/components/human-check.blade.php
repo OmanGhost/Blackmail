@@ -1,4 +1,5 @@
 @props(['action'])
+@if(app(\App\Services\HumanChallenge::class)->required(request()))
 @php
     $challenge = app(\App\Services\HumanChallenge::class)->issue(request(), trim(parse_url($action, PHP_URL_PATH) ?? '/', '/'));
     $english = app()->getLocale() === 'en';
@@ -11,3 +12,4 @@
     <p class="mt-2 text-xs">{{ $english ? 'A simple local anti-bot check. Valid for 30 minutes, used once.' : 'تحقق محلي بسيط لتقليل الإرسال الآلي. صالح 30 دقيقة ولمرة واحدة.' }}</p>
     @error('human_answer')<p role="alert" class="mt-2 text-sm text-danger">{{ $message }}</p>@enderror
 </fieldset>
+@endif
