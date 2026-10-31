@@ -10,6 +10,7 @@ class Updates extends Page
     public ?array $result=null;
     public static function canAccess(): bool { $user=\Illuminate\Support\Facades\Auth::guard('admin')->user();return $user?->is_active && $user->hasRole('super-admin'); }
     public static function getNavigationLabel(): string { return __('updates.title'); }
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path';
     public static function getNavigationGroup(): ?string { return __('admin.system'); }
     public function getTitle(): string { return __('updates.title'); }
     public function mount(): void { abort_unless(static::canAccess(),403);$this->result=app(ApplicationUpdates::class)->check(); }

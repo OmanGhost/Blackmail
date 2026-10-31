@@ -41,12 +41,15 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication(AppAuthentication::make()->recoverable(), isRequired: true)
             ->brandName(fn () => config('app.name').' — '.(app()->getLocale()==='en' ? 'Administration' : 'الإدارة'))
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->topNavigation()
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('17rem')
+            ->collapsedSidebarWidth('4.75rem')
             ->maxContentWidth(Width::Full)
             ->renderHook(PanelsRenderHook::TOPBAR_END, fn (): string => view('filament.language-switcher')->render())
             ->renderHook(PanelsRenderHook::FOOTER, fn (): string => \Livewire\Livewire::mount(\App\Livewire\SystemVersion::class))
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Blue,
+                'info' => Color::Sky,
                 'success' => Color::Emerald,
                 'danger' => Color::Red,
                 'warning' => Color::Amber,

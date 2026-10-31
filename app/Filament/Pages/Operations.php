@@ -16,6 +16,7 @@ class Operations extends Page implements HasTable
     protected string $view = 'filament.operations';
     public static function canAccess(): bool { return ConsultationRequestResource::canAccess(); }
     public static function getNavigationLabel(): string { return __('workflow.operations'); }
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-queue-list';
     public static function getNavigationGroup(): ?string { return __('admin.operations'); }
     public function getTitle(): string { return __('workflow.operations'); }
     public function counts(): array

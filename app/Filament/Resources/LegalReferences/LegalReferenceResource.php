@@ -18,7 +18,7 @@ class LegalReferenceResource extends Resource
 {
     protected static ?string $model = LegalReference::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-scale';
 
     public static function getNavigationGroup(): ?string
     {

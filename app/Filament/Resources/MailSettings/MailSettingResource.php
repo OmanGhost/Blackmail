@@ -22,6 +22,7 @@ class MailSettingResource extends Resource
     public static function getNavigationLabel(): string { return 'إعدادات البريد'; }
     public static function getModelLabel(): string { return 'إعدادات البريد'; }
     public static function getPluralModelLabel(): string { return 'إعدادات البريد'; }
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-server-stack';
     public static function getNavigationGroup(): ?string { return __('admin.system'); }
     public static function form(Schema $schema): Schema
     {

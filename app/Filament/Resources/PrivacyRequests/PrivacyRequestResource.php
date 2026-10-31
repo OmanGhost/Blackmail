@@ -15,6 +15,7 @@ class PrivacyRequestResource extends Resource
     public static function getNavigationLabel(): string { return 'طلبات حذف البيانات'; }
     public static function getModelLabel(): string { return 'طلب حذف البيانات'; }
     public static function getPluralModelLabel(): string { return 'طلبات حذف البيانات'; }
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
     public static function getNavigationGroup(): ?string { return __('admin.system'); }
     public static function canAccess(): bool { return auth()->user()?->hasRole('super-admin') ?? false; }
     public static function canCreate(): bool { return false; }

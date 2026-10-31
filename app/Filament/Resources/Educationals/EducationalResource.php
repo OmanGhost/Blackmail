@@ -18,7 +18,7 @@ class EducationalResource extends Resource
 {
     protected static ?string $model = EducationalResourceModel::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
 
     public static function getNavigationGroup(): ?string
     {

@@ -21,6 +21,7 @@ class EmailTemplateResource extends Resource
     public static function getNavigationLabel(): string { return 'قوالب البريد'; }
     public static function getModelLabel(): string { return 'قالب البريد'; }
     public static function getPluralModelLabel(): string { return 'قوالب البريد'; }
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-envelope';
     public static function getNavigationGroup(): ?string { return __('admin.system'); }
     public static function form(Schema $schema): Schema
     {

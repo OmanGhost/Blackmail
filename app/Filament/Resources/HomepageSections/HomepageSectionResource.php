@@ -18,7 +18,7 @@ class HomepageSectionResource extends Resource
 {
     protected static ?string $model = HomepageSection::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-home-modern';
 
     public static function getNavigationGroup(): ?string
     {

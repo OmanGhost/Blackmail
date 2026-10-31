@@ -13,6 +13,7 @@ class EventResource extends Resource
     protected static ?string $model=Event::class;
     public static function getNavigationLabel(): string { return __('events.title'); }
     public static function getModelLabel(): string { return __('events.title'); }
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     public static function getNavigationGroup(): ?string { return __('admin.content'); }
     public static function canAccess(): bool { return auth()->user()?->roles()->whereIn('name',['super-admin','content-manager'])->exists()??false; }
     public static function form(Schema $schema): Schema
