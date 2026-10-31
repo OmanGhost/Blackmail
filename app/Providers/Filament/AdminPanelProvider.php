@@ -31,6 +31,10 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->authenticatedRoutes(function () {
+                \Illuminate\Support\Facades\Route::get('/secure-evidence/{submission}', [\App\Http\Controllers\SecureEvidenceController::class,'staffShow'])->name('evidence.show');
+                \Illuminate\Support\Facades\Route::get('/secure-evidence/{submission}/download', [\App\Http\Controllers\SecureEvidenceController::class,'staffDownload'])->name('evidence.download');
+            })
             ->login()
             ->profile()
             ->multiFactorAuthentication(AppAuthentication::make()->recoverable(), isRequired: true)

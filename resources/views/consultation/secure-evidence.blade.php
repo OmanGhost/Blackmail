@@ -1,0 +1,29 @@
+@php($english=app()->getLocale()==='en')
+@if(app()->isProduction() && ! request()->isSecure())
+<p class="rounded-xl bg-red-50 p-4 text-red-800">{{ $english ? 'Open this page over HTTPS to use private submissions.' : 'افتح الصفحة عبر HTTPS لعرض نموذج الإرسال الخاص.' }}</p>
+@else
+@foreach($case->evidenceRequests()->with('submissions')->get() as $evidence)
+<section class="card border-blue-200" id="evidence-{{ $evidence->id }}">
+    <span class="eyebrow">{{ $english ? 'Private submission' : 'نموذج إرسال خاص' }}</span>
+    <h2 class="text-xl font-extrabold">{{ $english ? 'The specialist requested additional information' : 'طلب المختص معلومات أو مرفقات إضافية' }}</h2>
+    <p class="mt-4 whitespace-pre-line leading-8">{{ $evidence->instructions }}</p>
+    <p class="mt-3 text-xs text-slate-500">{{ $english ? 'Submission deadline' : 'آخر وقت للإرسال' }}: {{ $evidence->expires_at->format('Y-m-d H:i') }}</p>
+    <div class="mt-5 rounded-2xl bg-blue-50 p-5 text-sm leading-7 text-navy"><b>{{ $english ? 'How your submission is protected' : 'كيف نحمي إرسالك؟' }}</b><p class="mt-2">{{ $english ? 'Files, text, and file names are encrypted at rest outside public storage. Authorized specialists can decrypt them. This is not end-to-end encryption. Access and downloads by staff are logged. Materials expire after 30 days or at the request retention deadline, whichever comes first; automated removal requires the server scheduler.' : 'نشفّر الملف والنص واسم الملف عند التخزين، ونحفظ الملفات خارج المجلد العام. يمكن للمختص المخوّل فك التشفير؛ هذا ليس تشفيرًا بين الطرفين. يُسجّل فتح المختص للبيانات وتنزيلها. تنتهي إتاحة المواد بعد 30 يومًا أو عند انتهاء مدة احتفاظ الطلب أيهما أقرب، ويعتمد حذفها الآلي على مجدول الخادم.' }}</p><p class="mt-2">{{ $english ? 'Use HTTPS when submitting. Temporary upload processing and the authorized recipient device may hold unencrypted data.' : 'استخدم اتصال HTTPS للإرسال. قد توجد البيانات دون تشفير أثناء المعالجة المؤقتة للرفع وعلى جهاز المختص بعد تنزيلها.' }}</p>@if(!request()->isSecure())<p class="mt-2 font-bold text-amber-800">{{ $english ? 'Local development connection: HTTP. Use HTTPS before real sensitive submissions.' : 'الاتصال الحالي للتطوير المحلي HTTP. استخدم HTTPS قبل إرسال بيانات حساسة فعلية.' }}</p>@endif</div>
+    @if($evidence->isOpen())
+    <form method="post" enctype="multipart/form-data" action="{{ route('consultation.evidence.submit',$evidence) }}" class="mt-6 space-y-5">@csrf
+        <input type="hidden" name="MAX_FILE_SIZE" value="20971520">
+        @if($evidence->kind==='account_info')
+        <label class="block font-bold">{{ $english ? 'Account links and non-secret recovery information' : 'روابط الحساب ومعلومات الاسترداد غير السرية' }}<textarea name="secure_body" required maxlength="4000" rows="5" class="member-input mt-3" placeholder="{{ $english ? 'Account URL, public username, and an explanation of the recovery issue.' : 'رابط الحساب، اسم المستخدم العام، ووصف مشكلة الاسترداد فقط.' }}">{{ old('secure_body') }}</textarea></label>
+        @else
+        <label class="block font-bold">{{ $english ? 'Choose a file (up to 20 MB)' : 'اختر ملفًا (حتى 20 ميغابايت)' }}<input type="file" name="file" required accept="{{ $evidence->kind==='image' ? '.jpg,.jpeg,.png,.webp' : '.mp4,.webm' }}" class="member-input mt-3"></label>
+        <label class="block font-bold">{{ $english ? 'Explanation (optional)' : 'توضيح (اختياري)' }}<textarea name="secure_body" maxlength="4000" rows="3" class="member-input mt-3">{{ old('secure_body') }}</textarea></label>
+        @endif
+        <label class="flex items-start gap-3 text-sm leading-7"><input type="checkbox" name="no_secrets" value="1" required class="mt-2"><span>{{ $english ? 'I confirm that I am not sending passwords, one-time codes, recovery codes, or intimate content. I have redacted unnecessary personal information.' : 'أؤكد أنني لا أرسل كلمات مرور أو رموز تحقق أو رموز استرداد سرية أو محتوى حميميًا، وأنني حجبت البيانات الشخصية غير الضرورية.' }}</span></label>
+        <label class="flex items-start gap-3 text-sm leading-7"><input type="checkbox" name="consent" value="1" required class="mt-2"><span>{{ $english ? 'I consent to encrypted storage and access by the authorized specialist as explained above.' : 'أوافق على التخزين المشفّر وعلى اطلاع المختص المخوّل وفق التوضيح أعلاه.' }}</span></label>
+        <button class="member-button member-button-primary">{{ $english ? 'Submit privately' : 'حفظ وإرسال بشكل خاص' }}</button>
+    </form>
+    @else<p class="mt-5 font-bold">{{ $english ? 'This submission form is closed or expired.' : 'هذا النموذج مغلق أو انتهت صلاحيته.' }}</p>@endif
+    <div class="mt-6 space-y-3">@foreach($evidence->submissions as $submission)<div class="rounded-xl border p-4"><div class="flex flex-wrap justify-between gap-3"><b>{{ $english ? 'Submission' : 'إرسال' }} {{ $submission->id }}</b><time class="text-xs">{{ $submission->created_at->format('Y-m-d H:i') }}</time></div>@if(!$submission->isAvailable())<p class="mt-3 text-sm">{{ $english ? 'Withdrawn or removed under retention policy.' : 'تم سحب الإرسال أو حذفه وفق مدة الاحتفاظ.' }}</p>@else @if($submission->original_name)<p class="mt-3 break-all text-sm">{{ $submission->original_name }}</p>@endif @if($submission->body)<p class="mt-3 whitespace-pre-line text-sm">{{ $submission->body }}</p>@endif<form method="post" action="{{ route('consultation.evidence.withdraw',$submission) }}" class="mt-4">@csrf<button class="text-sm font-bold text-danger">{{ $english ? 'Withdraw submission and delete stored content' : 'سحب الإرسال وحذف المحتوى المخزّن' }}</button></form><p class="mt-2 text-xs text-slate-500">{{ $english ? 'Withdrawal cannot remove copies already downloaded by the specialist.' : 'السحب لا يحذف نسخًا سبق أن نزّلها المختص.' }}</p>@endif</div>@endforeach</div>
+</section>
+@endforeach
+@endif

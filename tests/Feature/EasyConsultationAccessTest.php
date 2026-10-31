@@ -23,8 +23,10 @@ class EasyConsultationAccessTest extends TestCase
     public function test_submission_opens_request_without_entering_code_and_forget_removes_access(): void
     {
         $case = $this->submit();
-        $this->get('/consultation/track')->assertOk()->assertSee($case->request_number)->assertSee($case->description)
-            ->assertHeader('Cache-Control', 'no-store, private')->assertSee('نسخ رابط المتابعة الخاص');
+        $this->get('/consultation/track')->assertOk()->assertSee($case->request_number)->assertDontSee($case->description)
+            ->assertHeader('Cache-Control', 'no-store, private');
+        $this->get('/consultation/track?panel=details')->assertOk()->assertSee($case->description);
+        $this->get('/consultation/track?panel=access')->assertOk()->assertSee('نسخ رابط المتابعة الخاص');
         $this->post('/consultation/forget')->assertRedirect('/consultation/track');
         $this->get('/consultation/track')->assertDontSee($case->description);
         $this->post('/consultation/reply', ['body' => 'A message'])->assertNotFound();

@@ -37,10 +37,10 @@ class ConsultationController extends Controller
         $data = $request->validate([
             'category' => ['required', 'in:account,blackmail,privacy,evidence,other'], 'country_id' => ['nullable', 'exists:countries,id'],
             'urgency' => ['nullable', 'in:normal,urgent,critical'], 'incident_stage' => ['nullable', 'in:threatening,published,payment_requested,account_compromised,other'],
-            'preferred_contact_method' => ['required', 'in:email,phone'], 'contact_details' => ['required', 'string', 'max:255'],
+            'preferred_contact_method' => ['required', 'in:email,phone'], 'contact_details' => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::when($request->input('preferred_contact_method') === 'email', ['email:rfc'])],
             'safe_contact_time' => ['nullable', 'string', 'max:100'],
             'description' => ['required', 'string', 'min:20', 'max:3000'], 'consent' => ['accepted'], 'website' => ['nullable', 'max:0'],
-        ]);
+        ], ['contact_details.email'=>__('workflow.valid_email_required')]);
         $publicId = (string) Str::uuid();
         $tracking = Str::upper(Str::random(12));
         $case = ConsultationRequest::create([
@@ -104,8 +104,25 @@ class ConsultationController extends Controller
 
     private function trackingView(Request $request, ?ConsultationRequest $case, bool $searched): View
     {
+        $panels=['conversation','files','plan','details','timeline','access','finish'];
+        $panel=$request->query('panel',session('tracking_panel', $case?->isEnded() && $case->rating===null ? 'finish':'conversation'));
+        if (! in_array($panel,$panels,true)) $panel='conversation';
+        $errors=session('errors');
+        if ($errors) {
+            if ($errors->hasAny(['file','secure_body','consent','no_secrets','evidence'])) $panel='files';
+            elseif ($errors->has('verification_email')) $panel='access';
+            elseif ($errors->hasAny(['rating','comment','status'])) $panel='finish';
+            elseif ($errors->has('body')) $panel='conversation';
+        }
+        if ($case) {
+            $kinds=['status'];
+            $kind=['conversation'=>'message','plan'=>'task','files'=>'evidence'][$panel] ?? null;
+            if ($kind) $kinds[]=$kind;
+            $case->updates()->whereNull('read_at')->whereIn('kind',$kinds)->update(['read_at'=>now()]);
+        }
         return view('consultation.track', [
             'case' => $case, 'searched' => $searched,
+            'panel'=>$panel,
             'memberRequests' => $request->user()?->consultationRequests()->latest()->get() ?? collect(),
             'accessLink' => $case ? $this->accessLink($case) : null,
         ]);

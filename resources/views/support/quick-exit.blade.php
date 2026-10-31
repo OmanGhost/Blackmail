@@ -1,0 +1,1 @@
+<form method="post" action="{{ route('quick-exit') }}" id="quick-exit-form" class="fixed bottom-4 end-4 z-[90]">@csrf<button type="submit" class="focus-ring rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-navy shadow-lg">{{ __('workflow.quick_exit') }} ↗</button></form>

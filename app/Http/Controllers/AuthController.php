@@ -62,6 +62,7 @@ class AuthController extends Controller
             'status' => ['nullable', 'in:active,ended,new,in_review,in_progress,contacted,completed,closed'],
             'q' => ['nullable', 'string', 'max:30'],
             'sort' => ['nullable', 'in:newest,oldest,updated'],
+            'unread' => ['nullable','boolean'],
         ]);
         $user = $request->user();
         $base = $user->consultationRequests();
@@ -71,7 +72,8 @@ class AuthController extends Controller
             'replied' => (clone $base)->where('status', 'contacted')->count(),
             'closed' => (clone $base)->whereIn('status', ['closed', 'completed'])->count(),
         ];
-        $query = $user->consultationRequests()->withCount('messages');
+        $query = $user->consultationRequests()->withCount(['messages','updates as unread_updates_count'=>fn ($q)=>$q->whereNull('read_at')]);
+        if ($request->boolean('unread')) $query->whereHas('updates',fn ($q)=>$q->whereNull('read_at'));
         if (($filters['status'] ?? null) === 'active') {
             $query->whereIn('status', ['new', 'in_review', 'in_progress']);
         } elseif (($filters['status'] ?? null) === 'ended') {
@@ -88,16 +90,23 @@ class AuthController extends Controller
             'updated' => $query->latest('updated_at'),
             default => $query->latest('id'),
         };
+        $focusRequest = $user->consultationRequests()->open()->latest('updated_at')->first();
         return view('auth.account', [
             'user' => $user, 'requests' => $query->paginate(8)->withQueryString(),
             'stats' => $stats, 'tab' => $filters['tab'] ?? 'overview',
+            'focusRequest'=>$focusRequest,
+            'nextTask'=>$focusRequest?->tasks()->whereNull('completed_at')->first(),
+            'lastReply'=>$focusRequest?->messages()->where('sender','staff')->reorder('id','desc')->first(),
+            'alerts' => \App\Models\RequestUpdate::whereHas('consultationRequest',fn ($q)=>$q->where('user_id',$user->id))->whereNull('read_at')->with('consultationRequest')->latest('id')->limit(20)->get(),
         ]);
     }
 
     public function updateProfile(Request $request): RedirectResponse
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$request->user()->id]]);
-        $request->user()->update($data);
+        $user = $request->user();
+        if ($user->email !== $data['email']) $user->forceFill(['email_verified_at'=>null]);
+        $user->fill($data)->save();
 
         return redirect()->route('account', ['tab' => 'profile'])->with('success', 'تم تحديث الملف الشخصي.');
     }

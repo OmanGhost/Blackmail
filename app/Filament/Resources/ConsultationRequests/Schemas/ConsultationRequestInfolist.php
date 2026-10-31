@@ -12,6 +12,27 @@ class ConsultationRequestInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            Section::make('طلبات المعلومات والمرفقات الآمنة')->description('لا تُعرض المحتويات هنا. افتح مراجعة الإرسالات لتسجيل الوصول وفك التشفير للمختص المخوّل فقط.')->schema([
+                RepeatableEntry::make('evidenceRequests')->label('النماذج المرسلة للمستخدم')->columns(3)->schema([
+                    TextEntry::make('instructions')->label('المطلوب')->columnSpanFull(),
+                    TextEntry::make('kind')->label('النوع'),
+                    TextEntry::make('status')->label('حالة النموذج'),
+                    TextEntry::make('expires_at')->label('آخر وقت للإرسال')->dateTime(),
+                ]),
+            ]),
+            Section::make('ملاحظات داخلية — للفريق فقط')->collapsed()->schema([
+                RepeatableEntry::make('internalNotes')->label('ملاحظات المختصين')->schema([
+                    TextEntry::make('author.name')->label('المختص'),
+                    TextEntry::make('body')->label('الملاحظة'),
+                    TextEntry::make('created_at')->label('الوقت')->dateTime(),
+                ]),
+            ]),
+            Section::make('خطة المتابعة للمستخدم')->schema([
+                RepeatableEntry::make('tasks')->label('المهام')->columns(2)->schema([
+                    TextEntry::make('title')->label('الخطوة'),
+                    TextEntry::make('completed_at')->label('أنجزها المستخدم في')->dateTime()->placeholder('لم تُنجز بعد'),
+                ]),
+            ]),
             Section::make('حساب صاحب الطلب')->schema([
                 TextEntry::make('user.name')->label('المستخدم')->placeholder('زائر دون حساب'),
                 TextEntry::make('user.email')->label('البريد')->placeholder('غير مرتبط بحساب'),

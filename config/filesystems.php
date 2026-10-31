@@ -29,6 +29,12 @@ return [
     */
 
     'disks' => [
+        'secure_evidence' => [
+            'driver'=>'local',
+            'root'=>storage_path('app/secure-evidence'),
+            'visibility'=>'private',
+            'throw'=>true,
+        ],
 
         'local' => [
             'driver' => 'local',
