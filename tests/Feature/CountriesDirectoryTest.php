@@ -51,10 +51,22 @@ class CountriesDirectoryTest extends TestCase
         $this->get('/countries')->assertDontSee(route('countries.show', 'egypt'));
     }
 
+    public function test_verified_countries_are_listed_first_by_default(): void
+    {
+        $this->country('AE', 'الإمارات', 'UAE');
+        $this->country('QA', 'قطر', 'Qatar', true);
+        $this->country('EG', 'مصر', 'Egypt');
+        $this->country('OM', 'عُمان', 'Oman', true);
+        $codes = collect($this->get('/countries')->assertOk()->viewData('countries')->items())->pluck('code')->all();
+        $this->assertSame(['OM','QA','AE','EG'], $codes);
+        $codes = collect($this->get('/countries?sort=name')->viewData('countries')->items())->pluck('code')->all();
+        $this->assertSame(['AE','OM','QA','EG'], $codes);
+    }
+
     public function test_invalid_options_fall_back_to_safe_defaults(): void
     {
         $this->country('OM', 'عُمان', 'Oman', true);
         $filters = $this->get('/countries?sort=id;drop&dir=sideways&status=x&per_page=1000&view=x')->assertOk()->viewData('filters');
-        $this->assertSame(['q'=>'','status'=>'all','sort'=>'name','dir'=>'asc','view'=>'table','per_page'=>12], $filters);
+        $this->assertSame(['q'=>'','status'=>'all','sort'=>'status','dir'=>'asc','view'=>'table','per_page'=>12], $filters);
     }
 }

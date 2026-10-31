@@ -44,7 +44,7 @@ class ContentController extends Controller
         $filters = [
             'q' => mb_substr(trim((string) $request->query('q', '')), 0, 60),
             'status' => in_array($request->query('status'), ['verified', 'pending'], true) ? $request->query('status') : 'all',
-            'sort' => in_array($request->query('sort'), ['name', 'status', 'verified_at', 'authorities'], true) ? $request->query('sort') : 'name',
+            'sort' => in_array($request->query('sort'), ['name', 'status', 'verified_at', 'authorities'], true) ? $request->query('sort') : 'status',
             'dir' => $request->query('dir') === 'desc' ? 'desc' : 'asc',
             'view' => $request->query('view') === 'cards' ? 'cards' : 'table',
             'per_page' => in_array((int) $request->query('per_page'), [12, 24, 48], true) ? (int) $request->query('per_page') : 12,

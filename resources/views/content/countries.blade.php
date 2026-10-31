@@ -5,7 +5,7 @@
     $sortUrl = fn (string $column) => request()->fullUrlWithQuery(['sort' => $column, 'dir' => $filters['sort'] === $column && $filters['dir'] === 'asc' ? 'desc' : 'asc', 'page' => null]);
     $ariaSort = fn (string $column) => $filters['sort'] === $column ? ($filters['dir'] === 'asc' ? 'ascending' : 'descending') : 'none';
     $arrow = fn (string $column) => $filters['sort'] === $column ? ($filters['dir'] === 'asc' ? '▲' : '▼') : '↕';
-    $hasFilters = $filters['q'] !== '' || $filters['status'] !== 'all' || $filters['sort'] !== 'name' || $filters['dir'] !== 'asc' || $filters['per_page'] !== 12;
+    $hasFilters = $filters['q'] !== '' || $filters['status'] !== 'all' || $filters['sort'] !== 'status' || $filters['dir'] !== 'asc' || $filters['per_page'] !== 12;
 @endphp
 @section('content')
 <section class="container-page py-16">
@@ -20,7 +20,7 @@
         <input type="hidden" name="view" value="{{ $filters['view'] }}">
         <label class="directory-field directory-field-wide"><span class="member-label">{{ __('countries.search_label') }}</span><input type="search" name="q" value="{{ $filters['q'] }}" maxlength="60" placeholder="{{ __('countries.search') }}" class="member-input"></label>
         <label class="directory-field"><span class="member-label">{{ __('countries.status') }}</span><select name="status" class="member-input">@foreach(['all','verified','pending'] as $status)<option value="{{ $status }}" @selected($filters['status']===$status)>{{ __('countries.status_'.$status) }}</option>@endforeach</select></label>
-        <label class="directory-field"><span class="member-label">{{ __('countries.sort') }}</span><select name="sort" class="member-input">@foreach(['name','status','verified_at','authorities'] as $sort)<option value="{{ $sort }}" @selected($filters['sort']===$sort)>{{ __('countries.sort_'.$sort) }}</option>@endforeach</select></label>
+        <label class="directory-field"><span class="member-label">{{ __('countries.sort') }}</span><select name="sort" class="member-input">@foreach(['status','name','verified_at','authorities'] as $sort)<option value="{{ $sort }}" @selected($filters['sort']===$sort)>{{ __('countries.sort_'.$sort) }}</option>@endforeach</select></label>
         <label class="directory-field"><span class="sr-only">{{ __('countries.sort') }}</span><span class="member-label" aria-hidden="true">&nbsp;</span><select name="dir" class="member-input" aria-label="{{ __('countries.sort') }}"><option value="asc" @selected($filters['dir']==='asc')>{{ __('countries.dir_asc') }}</option><option value="desc" @selected($filters['dir']==='desc')>{{ __('countries.dir_desc') }}</option></select></label>
         <label class="directory-field"><span class="member-label">{{ __('countries.per_page') }}</span><select name="per_page" class="member-input">@foreach([12,24,48] as $size)<option value="{{ $size }}" @selected($filters['per_page']===$size)>{{ $size }}</option>@endforeach</select></label>
         <div class="flex items-end gap-2"><button class="member-button member-button-primary">{{ __('countries.apply') }}</button>@if($hasFilters)<a href="{{ route('countries',['view'=>$filters['view']]) }}" class="member-button border border-slate-200 dark:border-slate-700">{{ __('countries.reset') }}</a>@endif</div>
