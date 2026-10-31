@@ -1,6 +1,6 @@
 # منصة إبتزاز
 
-Current release: **v1.5.0**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
+Current release: **v1.5.1**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
 
 Arabic-first, privacy-conscious anti-blackmail education and guidance platform built with Laravel 12, Livewire 3, Filament 4, Tailwind CSS 4, and Alpine.js.
 
