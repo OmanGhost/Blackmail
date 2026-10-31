@@ -38,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->profile()
             ->multiFactorAuthentication(AppAuthentication::make()->recoverable(), isRequired: true)
-            ->brandName('BLACKMAIL.OM — الإدارة')
+            ->brandName(fn () => config('app.name').' — '.(app()->getLocale()==='en' ? 'Administration' : 'الإدارة'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->topNavigation()
             ->maxContentWidth(Width::Full)

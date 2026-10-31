@@ -23,6 +23,8 @@ class CategoryForm
                     ->columnSpanFull(),
                 Textarea::make('description_en')
                     ->columnSpanFull(),
+                Textarea::make('content_ar')->label('معلومات النوع وتفاصيله بالعربية')->helperText('يمكن استخدام ## للعناوين، و- للقوائم.')->rows(15)->columnSpanFull(),
+                Textarea::make('content_en')->label('معلومات النوع وتفاصيله بالإنجليزية')->rows(15)->columnSpanFull(),
                 Toggle::make('is_active')
                     ->required(),
                 TextInput::make('sort_order')

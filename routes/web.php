@@ -25,6 +25,7 @@ Route::get('/consultation/recover/open/{token}', [SupportToolsController::class,
 Route::get('/account/verify-email/{user}/{hash}', [SupportToolsController::class,'verifyMember'])->middleware('signed')->name('account.verify-email');
 Route::view('/help', 'help')->name('help');
 Route::get('/encyclopedia', [ContentController::class, 'encyclopedia'])->name('encyclopedia');
+Route::get('/categories/{category:slug}', [ContentController::class, 'category'])->name('categories.show');
 Route::get('/encyclopedia/{article:slug}', [ContentController::class, 'article'])->name('articles.show');
 Route::get('/countries', [ContentController::class, 'countries'])->name('countries');
 Route::get('/countries/{country:slug}', [ContentController::class, 'country'])->name('countries.show');

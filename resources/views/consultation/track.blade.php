@@ -4,7 +4,7 @@
     $en=app()->getLocale()==='en';
 @endphp
 <section class="tracking-workspace">
-<div class="mb-7 flex flex-wrap items-center justify-between gap-4"><div><p class="text-sm text-slate-500">BLACKMAIL.OM / {{ $en?'Support':'الدعم والمساعدة' }}</p><h1 class="mt-2 text-3xl font-extrabold text-navy dark:text-white">{{ $en?'Track your request':'متابعة طلبك' }}</h1></div><div class="flex flex-wrap gap-3">@auth<a class="member-button border border-slate-200" href="{{ route('account') }}">{{ $en?'My requests':'طلباتي' }}</a>@endauth<a class="member-button member-button-primary" href="{{ route('consultation') }}">＋ {{ $en?'New request':'طلب جديد' }}</a></div></div>
+<div class="mb-7 flex flex-wrap items-center justify-between gap-4"><div><p class="text-sm text-slate-500">{{ config('app.name') }} / {{ $en?'Support':'الدعم والمساعدة' }}</p><h1 class="mt-2 text-3xl font-extrabold text-navy dark:text-white">{{ $en?'Track your request':'متابعة طلبك' }}</h1></div><div class="flex flex-wrap gap-3">@auth<a class="member-button border border-slate-200" href="{{ route('account') }}">{{ $en?'My requests':'طلباتي' }}</a>@endauth<a class="member-button member-button-primary" href="{{ route('consultation') }}">＋ {{ $en?'New request':'طلب جديد' }}</a></div></div>
 @if(session('success'))<p role="status" class="mb-6 rounded-xl bg-emerald-50 p-4 text-emerald-800">{{ session('success') }}</p>@endif
 @if($case)
 @php

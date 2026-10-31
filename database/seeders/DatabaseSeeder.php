@@ -19,7 +19,9 @@ class DatabaseSeeder extends Seeder
             Role::updateOrCreate(['name' => $name], ['label_ar' => $label]);
         }
         foreach ([['sexual-extortion', 'الابتزاز الجنسي', 'Sexual extortion'], ['financial-blackmail', 'الابتزاز المالي', 'Financial blackmail'], ['account-hacking', 'اختراق الحسابات', 'Account hacking'], ['identity-impersonation', 'انتحال الهوية', 'Identity impersonation'], ['ai-deepfake', 'التزييف العميق', 'AI deepfake blackmail'], ['digital-privacy', 'الخصوصية الرقمية', 'Digital privacy']] as $i => [$slug,$ar,$en]) {
-            Category::updateOrCreate(['slug' => $slug], ['name_ar' => $ar, 'name_en' => $en, 'sort_order' => $i]);
+            $category = Category::updateOrCreate(['slug' => $slug], ['name_ar' => $ar, 'name_en' => $en, 'sort_order' => $i]);
+            $guide = (require database_path('data/category-guides.php'))[$slug] ?? [];
+            if (! $category->content_ar && $guide) $category->update(['content_ar'=>$guide['content_ar'],'content_en'=>$guide['content_en']]);
         }
         foreach ([['OM', 'عُمان', 'Oman'], ['SA', 'السعودية', 'Saudi Arabia'], ['AE', 'الإمارات', 'United Arab Emirates'], ['BH', 'البحرين', 'Bahrain'], ['KW', 'الكويت', 'Kuwait'], ['QA', 'قطر', 'Qatar'], ['YE', 'اليمن', 'Yemen'], ['IQ', 'العراق', 'Iraq'], ['JO', 'الأردن', 'Jordan'], ['PS', 'فلسطين', 'Palestine'], ['LB', 'لبنان', 'Lebanon'], ['SY', 'سوريا', 'Syria'], ['EG', 'مصر', 'Egypt'], ['SD', 'السودان', 'Sudan'], ['SO', 'الصومال', 'Somalia'], ['DJ', 'جيبوتي', 'Djibouti'], ['KM', 'جزر القمر', 'Comoros'], ['LY', 'ليبيا', 'Libya'], ['TN', 'تونس', 'Tunisia'], ['DZ', 'الجزائر', 'Algeria'], ['MA', 'المغرب', 'Morocco'], ['MR', 'موريتانيا', 'Mauritania']] as [$code,$ar,$en]) {
             Country::updateOrCreate(['code' => $code], ['name_ar' => $ar, 'name_en' => $en, 'slug' => str($en)->slug(), 'verification_status' => 'unverified', 'is_published' => false]);

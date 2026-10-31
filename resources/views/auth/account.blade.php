@@ -6,7 +6,7 @@
     $categories = ['blackmail' => __('account.blackmail'), 'account' => __('account.account_help'), 'privacy' => __('account.privacy'), 'evidence' => __('account.evidence'), 'other' => __('account.other')];
 @endphp
 <section class="member-workspace">
-    <div class="member-heading"><div><p class="text-sm text-slate-500">BLACKMAIL.OM / {{ __('account.title') }}</p><h1 class="mt-2 text-3xl font-extrabold text-navy dark:text-white">{{ __('account.welcome') }}، {{ $user->name }}</h1><p class="mt-3 text-sm text-slate-500">{{ __('account.subtitle') }}</p></div><a href="{{ route('consultation') }}" class="member-button member-button-primary">＋ {{ __('account.new_request') }}</a></div>
+    <div class="member-heading"><div><p class="text-sm text-slate-500">{{ config('app.name') }} / {{ __('account.title') }}</p><h1 class="mt-2 text-3xl font-extrabold text-navy dark:text-white">{{ __('account.welcome') }}، {{ $user->name }}</h1><p class="mt-3 text-sm text-slate-500">{{ __('account.subtitle') }}</p></div><a href="{{ route('consultation') }}" class="member-button member-button-primary">＋ {{ __('account.new_request') }}</a></div>
     @if(session('success'))<div role="status" class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">{{ session('success') }}</div>@endif
     <div class="member-layout">
         <aside class="member-sidebar"><div class="member-identity"><span class="member-avatar">{{ mb_substr($user->name,0,1) }}</span><b class="mt-3 block">{{ $user->name }}</b><span class="mt-1 block break-all text-xs text-slate-500">{{ $user->email }}</span><span class="mt-3 inline-block rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{{ __('account.member') }}</span></div>

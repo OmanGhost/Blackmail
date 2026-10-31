@@ -10,5 +10,5 @@
             <a href="{{ route('home') }}" target="_blank" rel="noopener">{{ app()->getLocale() === 'ar' ? 'عرض الموقع' : 'View website' }} <span aria-hidden="true">↗</span></a>
         </div>
     </div>
-    <div class="admin-welcome-mark" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none"><path d="M50 10 20 22v25c0 22 13 36 30 43 17-7 30-21 30-43V22L50 10Z" stroke="currentColor" stroke-width="3"/><path d="m35 49 10 10 21-23" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>BLACKMAIL.OM</span></div>
+    <div class="admin-welcome-mark" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none"><path d="M50 10 20 22v25c0 22 13 36 30 43 17-7 30-21 30-43V22L50 10Z" stroke="currentColor" stroke-width="3"/><path d="m35 49 10 10 21-23" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>{{ config('app.name') }}</span></div>
 </div>

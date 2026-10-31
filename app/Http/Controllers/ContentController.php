@@ -4,11 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Country;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ContentController extends Controller
 {
+    public function category(Category $category): View
+    {
+        abort_unless($category->is_active,404);
+        $guides=require database_path('data/category-guides.php');
+        return view('content.category',[
+            'category'=>$category,
+            'articles'=>$category->articles()->published()->with('translations')->latest('published_at')->paginate(6),
+            'related'=>Category::where('is_active',true)->whereKeyNot($category->id)->orderBy('sort_order')->get(),
+            'sources'=>$guides[$category->slug]['sources'] ?? [],
+        ]);
+    }
     public function encyclopedia(Request $request): View
     {
         $articles = Article::published()->with(['translations', 'category'])->when($request->filled('q'), fn ($q) => $q->whereHas('translations', fn ($t) => $t->where('title', 'like', '%'.$request->string('q').'%')))->paginate(9)->withQueryString();
