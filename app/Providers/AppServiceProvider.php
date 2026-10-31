@@ -34,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
             session()->put('auth_versions.'.$event->guard, (int)$event->user->auth_version);
         });
         $this->serveLivewireFromSubfolder();
+        \Illuminate\Pagination\Paginator::defaultView('pagination.site');
+        \Illuminate\Pagination\Paginator::defaultSimpleView('pagination.site');
         foreach ([TextInput::class, Textarea::class, Select::class, Toggle::class, DatePicker::class, DateTimePicker::class, FileUpload::class, KeyValue::class, TextColumn::class, IconColumn::class] as $component) {
             $component::configureUsing(fn ($field) => $field->translateLabel());
         }

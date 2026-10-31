@@ -39,9 +39,45 @@ class ContentController extends Controller
         return view('content.article', compact('article', 'translation'));
     }
 
-    public function countries(): View
+    public function countries(\Illuminate\Http\Request $request): View
     {
-        return view('content.countries', ['countries' => Country::orderBy('name_ar')->get()]);
+        $filters = [
+            'q' => mb_substr(trim((string) $request->query('q', '')), 0, 60),
+            'status' => in_array($request->query('status'), ['verified', 'pending'], true) ? $request->query('status') : 'all',
+            'sort' => in_array($request->query('sort'), ['name', 'status', 'verified_at', 'authorities'], true) ? $request->query('sort') : 'name',
+            'dir' => $request->query('dir') === 'desc' ? 'desc' : 'asc',
+            'view' => $request->query('view') === 'cards' ? 'cards' : 'table',
+            'per_page' => in_array((int) $request->query('per_page'), [12, 24, 48], true) ? (int) $request->query('per_page') : 12,
+        ];
+        $verified = fn ($query) => $query->where('verification_status', 'verified')->where('is_published', true);
+
+        $query = Country::query()->withCount(['reportingAuthorities as authorities_count' => $verified]);
+        if ($filters['q'] !== '') {
+            $term = '%'.addcslashes($filters['q'], '\\%_').'%';
+            $query->where(fn ($q) => $q->where('name_ar', 'like', $term)->orWhere('name_en', 'like', $term)->orWhere('code', 'like', $term));
+        }
+        if ($filters['status'] === 'verified') {
+            $query->verified();
+        } elseif ($filters['status'] === 'pending') {
+            $query->where(fn ($q) => $q->where('verification_status', '!=', 'verified')->orWhere('is_published', false));
+        }
+
+        $nameColumn = app()->getLocale() === 'en' ? 'name_en' : 'name_ar';
+        $isVerified = "CASE WHEN verification_status = 'verified' AND is_published = 1 THEN 0 ELSE 1 END";
+        match ($filters['sort']) {
+            // Unverified countries have no public verification date, so they always sort last.
+            'verified_at' => $query->orderByRaw($isVerified)->orderBy('last_verified_at', $filters['dir']),
+            'status' => $query->orderByRaw($isVerified.' '.$filters['dir']),
+            'authorities' => $query->orderBy('authorities_count', $filters['dir']),
+            default => null,
+        };
+        $query->orderBy($nameColumn, $filters['sort'] === 'name' ? $filters['dir'] : 'asc');
+
+        return view('content.countries', [
+            'countries' => $query->paginate($filters['per_page'])->withQueryString(),
+            'filters' => $filters,
+            'totals' => ['all' => Country::count(), 'verified' => Country::verified()->count()],
+        ]);
     }
 
     public function country(Country $country): View
