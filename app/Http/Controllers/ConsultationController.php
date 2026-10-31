@@ -27,7 +27,9 @@ class ConsultationController extends Controller
     private function formView(bool $emergency): View
     {
         return view('consultation.create', [
-            'countries' => Country::orderBy('name_ar')->get(),
+            'countries' => Country::with(['reportingAuthorities' => fn ($query) => $query
+                ->where('is_published', true)->where('verification_status', 'verified')])
+                ->orderBy(app()->getLocale() === 'en' ? 'name_en' : 'name_ar')->get(),
             'emergency' => $emergency,
         ]);
     }
@@ -35,6 +37,7 @@ class ConsultationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
+            'service_type' => ['nullable', 'in:consultation,support'],
             'category' => ['required', 'in:account,blackmail,privacy,evidence,other'], 'country_id' => ['nullable', 'exists:countries,id'],
             'urgency' => ['nullable', 'in:normal,urgent,critical'], 'incident_stage' => ['nullable', 'in:threatening,published,payment_requested,account_compromised,other'],
             'preferred_contact_method' => ['required', 'in:email,phone'], 'contact_details' => ['required', 'string', 'max:255', \Illuminate\Validation\Rule::when($request->input('preferred_contact_method') === 'email', ['email:rfc'])],
@@ -44,6 +47,7 @@ class ConsultationController extends Controller
         $publicId = (string) Str::uuid();
         $tracking = Str::upper(Str::random(12));
         $case = ConsultationRequest::create([
+            'service_type' => $data['service_type'] ?? 'consultation',
             'user_id' => $request->user()?->id,
             'technical_metadata' => [
                 'request_id' => (string) Str::uuid(),

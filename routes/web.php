@@ -23,7 +23,10 @@ Route::get('/consultation/recover', [SupportToolsController::class,'recoveryForm
 Route::post('/consultation/recover', [SupportToolsController::class,'recover'])->middleware('throttle:3,10')->name('consultation.recovery.send');
 Route::get('/consultation/recover/open/{token}', [SupportToolsController::class,'openRecovery'])->middleware('throttle:10,10')->name('consultation.recovery.open');
 Route::get('/account/verify-email/{user}/{hash}', [SupportToolsController::class,'verifyMember'])->middleware('signed')->name('account.verify-email');
-Route::view('/help', 'help')->name('help');
+Route::get('/help', function () {
+    return view('help', ['countries' => \App\Models\Country::with(['reportingAuthorities' => fn ($query) => $query
+        ->where('is_published', true)->where('verification_status', 'verified')])->orderBy('name_ar')->get()]);
+})->name('help');
 Route::get('/encyclopedia', [ContentController::class, 'encyclopedia'])->name('encyclopedia');
 Route::get('/categories/{category:slug}', [ContentController::class, 'category'])->name('categories.show');
 Route::get('/encyclopedia/{article:slug}', [ContentController::class, 'article'])->name('articles.show');

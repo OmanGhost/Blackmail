@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetLocale::class,
             SecurityHeaders::class,
+            \App\Http\Middleware\CountPublicVisitors::class,
+            \App\Http\Middleware\VerifyHuman::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

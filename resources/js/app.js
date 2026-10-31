@@ -1,4 +1,17 @@
 import './bootstrap';
+import './help-guide';
+
+document.querySelectorAll('[data-country-contact]').forEach((field) => {
+    const select = field.querySelector('select');
+    const notices = [...field.querySelectorAll('[data-country-notice]')];
+    const update = () => notices.forEach((notice) => {
+        notice.hidden = notice.dataset.countryNotice !== select.value;
+    });
+    select.addEventListener('change', update);
+    window.addEventListener('pageshow', update);
+    select.form?.addEventListener('reset', () => setTimeout(update, 0));
+    update();
+});
 
 document.querySelectorAll('[data-hero-slideshow]').forEach((hero) => {
     const slides = [...hero.querySelectorAll('.hero-slide')];
