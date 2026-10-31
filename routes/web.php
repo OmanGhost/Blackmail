@@ -28,6 +28,8 @@ Route::get('/help', function () {
         ->where('is_published', true)->where('verification_status', 'verified')])->orderBy('name_ar')->get()]);
 })->name('help');
 Route::get('/blog', [ContentController::class, 'encyclopedia'])->name('blog');
+Route::get('/events', [\App\Http\Controllers\EventController::class,'index'])->name('events');
+Route::get('/events/{event:slug}', [\App\Http\Controllers\EventController::class,'show'])->name('events.show');
 Route::get('/encyclopedia', fn () => redirect()->route('blog', request()->query(), 301))->name('encyclopedia');
 Route::get('/categories/{category:slug}', [ContentController::class, 'category'])->name('categories.show');
 Route::get('/blog/{article:slug}', [ContentController::class, 'article'])->name('articles.show');
