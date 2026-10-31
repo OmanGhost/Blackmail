@@ -31,6 +31,8 @@ Route::get('/encyclopedia', [ContentController::class, 'encyclopedia'])->name('e
 Route::get('/categories/{category:slug}', [ContentController::class, 'category'])->name('categories.show');
 Route::get('/encyclopedia/{article:slug}', [ContentController::class, 'article'])->name('articles.show');
 Route::get('/countries', [ContentController::class, 'countries'])->name('countries');
+Route::get('/directory-request', [\App\Http\Controllers\DirectoryRequestController::class,'create'])->name('directory.requests.create');
+Route::post('/directory-request', [\App\Http\Controllers\DirectoryRequestController::class,'store'])->middleware('throttle:3,10')->name('directory.requests.store');
 Route::get('/countries/{country:slug}', [ContentController::class, 'country'])->name('countries.show');
 Route::view('/protection', 'content.protection')->name('protection');
 Route::view('/tools', 'content.tools')->name('tools');
