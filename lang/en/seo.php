@@ -2,7 +2,7 @@
 
 return [
     'default' => 'An independent Arabic platform against online blackmail: safe immediate steps, official reporting channels across Arab countries, and tips to protect your accounts and privacy.',
-    'home_title' => 'You are not alone — help and reporting for online blackmail',
+    'home_title' => 'Don\'t face online blackmail alone',
     'home' => 'Facing online, sexual or financial blackmail? Get confidential guidance, practical first steps, and learn how to report to the official authorities in your country.',
     'blog' => 'Articles, news and videos about online, sexual and financial blackmail, account hacking and deepfakes — and how to respond and report safely.',
     'category' => 'A complete guide to :category: how it happens, warning signs, what to do now, and how to report it to the authorities.',

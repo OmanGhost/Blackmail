@@ -107,6 +107,7 @@ class SeoTest extends TestCase
         $this->seed();
         $this->get('/')->assertOk()
             ->assertSee('حتى لا تواجه الابتزاز الإلكتروني وحدك')
+            ->assertSee('<title>لا تواجه الابتزاز الإلكتروني وحدك | '.config('app.name').'</title>', false)
             ->assertSee('images/hero-support.webp', false)
             ->assertDontSee('images/hero-support.png', false)
             ->assertDontSee('<img src="'.asset('images/hero-support.webp').'" width="1535" height="1024" alt=""', false);
