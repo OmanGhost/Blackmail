@@ -12,6 +12,9 @@ class EventResource extends Resource
 {
     protected static ?string $model=Event::class;
     public static function getNavigationLabel(): string { return __('events.title'); }
+    // Labels are already plural Arabic nouns; Filament would otherwise append an English "s".
+    public static function getPluralModelLabel(): string { return static::getModelLabel(); }
+
     public static function getModelLabel(): string { return __('events.title'); }
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     public static function getNavigationGroup(): ?string { return __('admin.content'); }

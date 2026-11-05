@@ -1,7 +1,7 @@
 <div class="hero-slides" aria-hidden="true">
     @foreach(['center', 'left', 'right'] as $position)
         <div class="hero-slide hero-slide-{{ $position }} {{ $loop->first ? 'is-active' : '' }}">
-            <img src="{{ asset('images/hero-support.png') }}" alt="" @if($loop->first) fetchpriority="high" @endif>
+            <img src="{{ asset('images/hero-support.webp') }}" width="1535" height="1024" alt="{{ app()->getLocale() === 'en' ? 'A worried woman and man reading threatening messages on their phones' : 'امرأة ورجل قلقان يقرآن رسائل تهديد وابتزاز على هاتفيهما' }}" @if($loop->first) fetchpriority="high" @else loading="lazy" @endif>
         </div>
     @endforeach
 </div>

@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots'])->name('robots');
 Route::post('/consultation/evidence/{evidenceRequest}', [\App\Http\Controllers\SecureEvidenceController::class,'submit'])->middleware('throttle:10,10')->name('consultation.evidence.submit');
 Route::post('/consultation/evidence/submissions/{submission}/withdraw', [\App\Http\Controllers\SecureEvidenceController::class,'withdraw'])->middleware('throttle:10,10')->name('consultation.evidence.withdraw');
 Route::view('/neutral', 'support.neutral')->name('neutral');

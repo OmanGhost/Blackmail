@@ -35,6 +35,9 @@ class HomepageSectionResource extends Resource
         return __('admin.resources.homepage');
     }
 
+    // Labels are already plural Arabic nouns; Filament would otherwise append an English "s".
+    public static function getPluralModelLabel(): string { return static::getModelLabel(); }
+
     public static function getModelLabel(): string
     {
         return __('admin.resources.homepage');

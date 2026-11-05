@@ -35,6 +35,9 @@ class ArticleResource extends Resource
         return __('blog.title');
     }
 
+    // Labels are already plural Arabic nouns; Filament would otherwise append an English "s".
+    public static function getPluralModelLabel(): string { return static::getModelLabel(); }
+
     public static function getModelLabel(): string
     {
         return __('blog.title');

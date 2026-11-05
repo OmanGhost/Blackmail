@@ -15,6 +15,9 @@ class DirectoryRequestResource extends Resource
 {
     protected static ?string $model=DirectoryRequest::class;
     public static function getNavigationLabel(): string { return __('directory.requests'); }
+    // Labels are already plural Arabic nouns; Filament would otherwise append an English "s".
+    public static function getPluralModelLabel(): string { return static::getModelLabel(); }
+
     public static function getModelLabel(): string { return __('directory.requests'); }
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox-arrow-down';
     public static function getNavigationGroup(): ?string { return __('admin.directory'); }

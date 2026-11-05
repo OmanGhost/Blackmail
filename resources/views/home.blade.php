@@ -1,4 +1,4 @@
-@extends('layouts.app',['title'=>'لا تواجه الابتزاز وحدك'])
+@extends('layouts.app',['title'=>'لا تواجه الابتزاز وحدك','metaTitle'=>__('seo.home_title'),'metaDescription'=>__('seo.home'),'jsonLd'=>[\App\Support\Seo::organization(),\App\Support\Seo::website()]])
 @section('content')
 @php
     $hero = $homepage->get('hero');

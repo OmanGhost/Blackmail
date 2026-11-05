@@ -1,4 +1,4 @@
-@extends('layouts.app',['title'=>__('countries.eyebrow')])
+@extends('layouts.app',['title'=>__('countries.eyebrow'),'metaDescription'=>__('seo.countries')])
 @php
     $en = app()->getLocale() === 'en';
     $isVerified = fn ($country) => $country->verification_status === 'verified' && $country->is_published;

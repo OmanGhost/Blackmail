@@ -1,4 +1,4 @@
-@extends('layouts.app',['title'=>__('security-tools.title')])
+@extends('layouts.app',['title'=>__('security-tools.title'),'metaDescription'=>__('seo.tools')])
 @section('content')
 <section class="container-page py-12" x-data="{done:[], active:0}" id="account-security-plan">
 <span class="eyebrow">{{ __('security-tools.badge') }}</span><h1 class="section-title">{{ __('security-tools.title') }}</h1><p class="mt-4 max-w-3xl leading-8">{{ __('security-tools.intro') }}</p>

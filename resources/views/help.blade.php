@@ -1,4 +1,4 @@
-@extends('layouts.app',['title'=>app()->getLocale()==='en'?'Help guide':'دليل المساعدة خطوة بخطوة'])
+@extends('layouts.app',['title'=>app()->getLocale()==='en'?'Help guide':'دليل المساعدة خطوة بخطوة','metaDescription'=>__('seo.help')])
 @section('content')
 @php
 $en=app()->getLocale()==='en';

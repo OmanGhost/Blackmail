@@ -4,7 +4,11 @@
     $description=($en?$category->description_en:$category->description_ar) ?: $category->description_ar;
     $content=($en?$category->content_en:$category->content_ar) ?: ($category->content_ar ?: $category->content_en);
 @endphp
-@extends('layouts.app',['title'=>$name])
+@extends('layouts.app',[
+    'title'=>$name,
+    'metaDescription'=>$description ?: __('seo.category',['category'=>$name]),
+    'jsonLd'=>[\App\Support\Seo::breadcrumbs([[__('seo.home_crumb'),route('home')],[__('blog.title'),route('blog')],[$name,route('categories.show',$category)]])],
+])
 @section('content')
 <section class="bg-navy py-14 text-white"><div class="container-page"><nav aria-label="{{ $en?'Breadcrumb':'مسار الصفحة' }}" class="flex flex-wrap gap-3 text-sm text-slate-300"><a href="{{ route('home') }}">{{ $en?'Home':'الرئيسية' }}</a><span aria-hidden="true">/</span><a href="{{ route('home') }}#blackmail-types">{{ $en?'Types of blackmail':'أشكال الابتزاز' }}</a><span aria-hidden="true">/</span><span>{{ $name }}</span></nav><span class="mt-7 inline-flex rounded-full border border-white/20 px-4 py-2 text-xs">{{ $en?'Understand the threat. Know your options.':'افهم التهديد وتعرّف على خياراتك' }}</span><h1 class="mt-5 text-4xl font-extrabold">{{ $name }}</h1>@if($description)<p class="mt-5 max-w-3xl leading-8 text-slate-200">{{ $description }}</p>@endif</div></section>
 <section class="container-page grid items-start gap-8 py-12 lg:grid-cols-[minmax(0,1fr)_19rem]">

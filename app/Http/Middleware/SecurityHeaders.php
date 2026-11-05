@@ -20,6 +20,10 @@ class SecurityHeaders
             $response->headers->set('Cache-Control', 'no-store, private');
             $response->headers->set('Referrer-Policy', 'no-referrer');
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        } elseif ($request->routeIs('login', 'register', 'password.*', 'contact') || $request->filled('q')
+            || \App\Support\PanelAccess::matches($request)) {
+            // Sign-in forms, search results and the admin panel have no value in search results.
+            $response->headers->set('X-Robots-Tag', 'noindex, follow');
         }
         if (app()->isProduction()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
