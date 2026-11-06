@@ -13,7 +13,7 @@ class Updates extends Page
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path';
     public static function getNavigationGroup(): ?string { return __('admin.system'); }
     public function getTitle(): string { return __('updates.title'); }
-    public function mount(): void { abort_unless(static::canAccess(),403);$this->result=app(ApplicationUpdates::class)->check(); }
+    public function mount(): void { abort_unless(static::canAccess(),403);$this->result=app(ApplicationUpdates::class)->check(true); }
     protected function getHeaderActions(): array
     {
         return [Action::make('check')->label(__('updates.check'))->action(function(): void {

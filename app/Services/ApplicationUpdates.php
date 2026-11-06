@@ -27,7 +27,9 @@ class ApplicationUpdates
                 } else $result['status']=match($response->status()) {401,404=>'access_denied',403,429=>'rate_limited',default=>'unavailable'};
             } catch (Throwable) { $result['status']='unavailable'; }
         }
-        Cache::put($this->key(),$result,now()->addHours($result['status']==='ok'?(int)config('platform.updates.interval_hours',12):1));
+        // A pending update stays pending, so cache it longer. When up to date, recheck hourly so new releases show up quickly.
+        $available=$result['status']==='ok' && version_compare($result['latest'],$this->version(),'>');
+        Cache::put($this->key(),$result,now()->addHours($available?(int)config('platform.updates.interval_hours',12):1));
         return $result;
     }
     public function displayStatus(?array $result): string
