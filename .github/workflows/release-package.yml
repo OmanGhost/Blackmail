@@ -66,7 +66,11 @@ jobs:
             if [ -d "$dir" ]; then mkdir -p "dist/package/$(dirname "$dir")"; cp -R "$dir" "dist/package/$dir"; fi
           done
           rm -rf dist/package/tests dist/package/.github dist/package/storage dist/package/bootstrap/cache dist/package/.env
-          tar -czf "dist/blackmail-$TAG.tar.gz" -C dist package
+          # List every file with its SHA-256. The updater extracts files by this list and checks each hash,
+          # so a truncated or missing file stops the update instead of being installed.
+          (cd dist/package && find . -type f | sed 's|^\./||' | LC_ALL=C sort > ../files.txt && xargs -d '\n' sha256sum < ../files.txt > .package-manifest)
+          # ustar: the only tar format PHP's PharData reads correctly for long paths. tar fails here if a path does not fit.
+          tar --format=ustar -czf "dist/blackmail-$TAG.tar.gz" -C dist package
           (cd dist && sha256sum "blackmail-$TAG.tar.gz" > "blackmail-$TAG.tar.gz.sha256")
           ls -lh dist
 

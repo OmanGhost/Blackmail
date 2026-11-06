@@ -6,7 +6,7 @@
  * cached, plus one neutral offline page shown when there is no connection.
  * Bump VERSION on each release so phones fetch a fresh offline page.
  */
-const VERSION = '1.17.0';
+const VERSION = '1.17.1';
 const CACHE = `ibtizaz-static-${VERSION}`;
 const scope = new URL(self.registration.scope);
 const OFFLINE_URL = new URL('offline', scope).href;

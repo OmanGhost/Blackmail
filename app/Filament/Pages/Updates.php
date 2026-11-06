@@ -19,9 +19,17 @@ class Updates extends Page
     public function mount(): void
     {
         abort_unless(static::canAccess(),403);
-        // An update copied in the previous request finishes here, in a fresh PHP process running the new code.
+        // The update runs as short steps, one per page load, so none of them hits the host's time limit:
+        // the button downloads, the next load copies the files, and the load after that runs migrations
+        // in a fresh PHP process that already has the new code.
+        $updater=app(ApplicationUpdater::class);
         try {
-            if ($done=app(ApplicationUpdater::class)->finalize()) Notification::make()->title(__('updates.installed',['version'=>$done['to']]))->success()->persistent()->send();
+            if ($updater->downloaded()) {
+                $updater->apply();
+                $this->redirect(static::getUrl());
+                return;
+            }
+            if ($done=$updater->finalize()) Notification::make()->title(__('updates.installed',['version'=>$done['to']]))->success()->persistent()->send();
         } catch (UpdateFailed $e) {
             report($e);
             Notification::make()->title($e->userMessage())->danger()->persistent()->send();
@@ -30,7 +38,8 @@ class Updates extends Page
     }
     public function canInstall(): bool
     {
-        return static::canAccess() && app(ApplicationUpdates::class)->displayStatus($this->result)==='available' && ($this->result['package']??false) && !app(ApplicationUpdater::class)->pending();
+        $updater=app(ApplicationUpdater::class);
+        return static::canAccess() && app(ApplicationUpdates::class)->displayStatus($this->result)==='available' && ($this->result['package']??false) && !$updater->pending() && !$updater->downloaded();
     }
     protected function getHeaderActions(): array
     {
@@ -43,13 +52,13 @@ class Updates extends Page
                 ->action(function(): void {
                     abort_unless($this->canInstall(),403);
                     try {
-                        app(ApplicationUpdater::class)->install(auth('admin')->id());
+                        app(ApplicationUpdater::class)->prepare(auth('admin')->id());
                     } catch (UpdateFailed $e) {
                         report($e);
                         Notification::make()->title($e->userMessage())->danger()->persistent()->send();
                         return;
                     }
-                    // Load the page again so migrations run with the new code.
+                    // The next page loads copy the files and then run migrations with the new code.
                     $this->redirect(static::getUrl());
                 }),
             Action::make('rollback')->label(__('updates.rollback'))->icon('heroicon-o-arrow-uturn-left')->color('gray')

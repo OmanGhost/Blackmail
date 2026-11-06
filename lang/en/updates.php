@@ -18,10 +18,11 @@ return [
     'errors'=>[
         'not_configured'=>'Set GITHUB_UPDATE_TOKEN first.','unavailable'=>'Could not reach GitHub. Try again later.','invalid_response'=>'Release information could not be read.',
         'package_missing'=>'The install package for this release is not ready yet. Try again in a few minutes.','pending'=>'An update has not finished. Open the updates page to finish it, or roll it back.',
-        'busy'=>'Another update is running right now.','not_newer'=>'No release newer than the installed version.','download_failed'=>'The update package could not be downloaded. Nothing was changed.',
+        'busy'=>'Another update is running right now. Wait a minute, then reload this page.','not_newer'=>'No release newer than the installed version.','download_failed'=>'The update package could not be downloaded. Nothing was changed.',
         'checksum_failed'=>'The update package failed its integrity check. Nothing was changed.','invalid_package'=>'The update package is invalid. Nothing was changed.',
         'not_writable'=>'The server cannot write to the application files. Nothing was changed. Update from the terminal instead.','copy_failed'=>'Copying files failed, and the previous version was restored automatically.',
         'migrate_failed'=>'Files were copied but database migrations failed. Check the log, or roll back the update.','version_mismatch'=>'The installed version does not match the pending update, so it was not finished.',
+        'timed_out'=>'The server stopped the update twice for exceeding its time limit, so it was cancelled. Update from the terminal with: php artisan app:update',
         'backup_missing'=>'That backup does not exist.',
     ],
 ];

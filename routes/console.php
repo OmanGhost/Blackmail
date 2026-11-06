@@ -51,6 +51,31 @@ Artisan::command('application:check-updates', function () {
 })->purpose('Check the latest stable application release without installing it');
 Schedule::command('application:check-updates')->twiceDaily(1,13)->withoutOverlapping();
 
+Artisan::command('app:update', function () {
+    $updater = app(\App\Services\ApplicationUpdater::class);
+    try {
+        // Finishing step: migrations and cache clear, in a process that loaded the new code.
+        if ($done = $updater->finalize()) {
+            $this->info(__('updates.installed', ['version' => $done['to']]));
+            return 0;
+        }
+        $this->line('v'.$updater->version().' → '.__('updates.check').'…');
+        $version = $updater->downloaded() ? $updater->apply() : $updater->install();
+    } catch (\App\Services\UpdateFailed $e) {
+        $this->error($e->userMessage());
+        return $e->reason === 'not_newer' ? 0 : 1;
+    }
+    $this->info('v'.$version.' ✓');
+    // Run the finishing step in a new PHP process so it uses the files just copied.
+    $command = escapeshellarg(PHP_BINARY).' '.escapeshellarg(base_path('artisan')).' app:update';
+    if (function_exists('passthru')) {
+        passthru($command, $code);
+        return $code;
+    }
+    $this->warn('Run "php artisan app:update" once more to finish.');
+    return 0;
+})->purpose('Download and install the latest release (same steps as the admin panel button)');
+
 Artisan::command('geoip:update', function () {
     $target = config('platform.geo.database');
     \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($target));

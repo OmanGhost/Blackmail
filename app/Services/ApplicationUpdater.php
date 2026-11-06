@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\AuditLog;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use PharData;
 use RecursiveDirectoryIterator;
@@ -81,56 +80,96 @@ class ApplicationUpdater
         return ['tag' => $tag, 'version' => $match[1], 'archive' => $archive, 'checksum' => $checksum];
     }
 
-    /** Download, verify and copy the latest release. Finish with finalize() on the next request. */
-    public function install(?int $userId = null): string
+    /**
+     * Step 1 of 3: download and verify the latest release package.
+     * Each step runs in its own request so none of them hits the host's time limit.
+     */
+    public function prepare(?int $userId = null): string
     {
         if ($this->pending()) {
             throw new UpdateFailed('pending');
         }
-        $lock = Cache::lock('application-update', 900);
-        if (! $lock->get()) {
-            throw new UpdateFailed('busy');
-        }
-        @set_time_limit(0);
-        ignore_user_abort(true);
-        $work = $this->workDir();
-        if (! is_dir($work)) {
-            mkdir($work, 0755, true);
-        }
-        $staging = $work.'/staging';
-        $archive = $work.'/download.tar.gz';
-        try {
+
+        return $this->locked(function () use ($userId) {
+            $this->discardDownload();
             $release = $this->release();
             if (! version_compare($release['version'], $this->version(), '>')) {
                 throw new UpdateFailed('not_newer');
             }
-            $this->deleteTree($staging);
-            @unlink($archive);
-            $this->download($release, $archive);
-            $package = $this->extract($archive, $staging, $release['version']);
-            $plan = $this->plan($package);
-            $this->assertWritable($plan);
-            $backup = $this->backup($plan, $release['version']);
-            try {
-                foreach ($plan as $item) {
-                    $this->copyFile($item['from'], $item['to']);
-                }
-            } catch (Throwable $e) {
-                $this->restore($backup);
-                throw new UpdateFailed('copy_failed', $e);
-            }
-            file_put_contents($work.'/pending.json', json_encode([
-                'from' => $backup['from'], 'to' => $release['version'], 'backup' => $backup['id'],
-                'files' => count($plan), 'user_id' => $userId, 'at' => now()->toIso8601String(),
+            $this->download($release, $this->workDir().'/download.tar.gz');
+            file_put_contents($this->workDir().'/download.json', json_encode([
+                'version' => $release['version'], 'user_id' => $userId, 'attempts' => 0, 'at' => now()->toIso8601String(),
             ]));
-            $this->resetOpcache();
 
             return $release['version'];
-        } finally {
-            $this->deleteTree($staging);
-            @unlink($archive);
-            $lock->release();
+        });
+    }
+
+    /** A verified package waiting for apply(). */
+    public function downloaded(): ?array
+    {
+        $state = $this->workDir().'/download.json';
+        if (! is_file($state) || ! is_file($this->workDir().'/download.tar.gz')) {
+            return null;
         }
+
+        return json_decode((string) file_get_contents($state), true) ?: null;
+    }
+
+    /** Step 2 of 3: unpack only the files that changed, back them up and copy them in. Step 3 is finalize(). */
+    public function apply(): string
+    {
+        $state = $this->downloaded();
+        if (! $state) {
+            throw new UpdateFailed('download_failed');
+        }
+
+        return $this->locked(function () use ($state) {
+            // A request killed by the host's time limit leaves the state behind; stop retrying after two tries.
+            if (($state['attempts'] ?? 0) >= 2) {
+                $this->discardDownload();
+                throw new UpdateFailed('timed_out');
+            }
+            $state['attempts'] = ($state['attempts'] ?? 0) + 1;
+            file_put_contents($this->workDir().'/download.json', json_encode($state));
+            $staging = $this->workDir().'/staging';
+            try {
+                $this->deleteTree($staging);
+                $package = $this->extract($this->workDir().'/download.tar.gz', $staging, $state['version']);
+                $plan = $this->plan($package);
+                $this->assertWritable($plan);
+                $backup = $this->backup($plan, $state['version']);
+                try {
+                    foreach ($plan as $item) {
+                        $this->copyFile($item['from'], $item['to']);
+                    }
+                } catch (Throwable $e) {
+                    $this->restore($backup);
+                    throw new UpdateFailed('copy_failed', $e);
+                }
+                file_put_contents($this->workDir().'/pending.json', json_encode([
+                    'from' => $backup['from'], 'to' => $state['version'], 'backup' => $backup['id'],
+                    'files' => count($plan), 'user_id' => $state['user_id'] ?? null, 'at' => now()->toIso8601String(),
+                ]));
+            } catch (UpdateFailed $e) {
+                $this->discardDownload();
+                throw $e;
+            } finally {
+                $this->deleteTree($staging);
+            }
+            $this->discardDownload();
+            $this->resetOpcache();
+
+            return $state['version'];
+        });
+    }
+
+    /** Steps 1 and 2 in one go (terminal and tests). Run finalize() afterwards in a fresh process. */
+    public function install(?int $userId = null): string
+    {
+        $this->prepare($userId);
+
+        return $this->apply();
     }
 
     /** Runs in a fresh request after install(): apply migrations and clear caches. */
@@ -164,21 +203,16 @@ class ApplicationUpdater
         if (! $manifest) {
             throw new UpdateFailed('backup_missing');
         }
-        $lock = Cache::lock('application-update', 900);
-        if (! $lock->get()) {
-            throw new UpdateFailed('busy');
-        }
-        try {
+        return $this->locked(function () use ($manifest, $id, $userId) {
             $this->restore($manifest);
             @unlink($this->workDir().'/pending.json');
+            $this->discardDownload();
             $this->resetOpcache();
             $this->clearCaches();
             $this->audit('application.rolled_back', ['from' => $manifest['to'], 'to' => $manifest['from'], 'backup' => $id, 'by' => $userId]);
-        } finally {
-            $lock->release();
-        }
 
-        return $manifest;
+            return $manifest;
+        });
     }
 
     /** @return array<int, array{id: string, from: string, to: string, created_at: string}> */
@@ -227,48 +261,103 @@ class ApplicationUpdater
         }
     }
 
+    /**
+     * Unpacks only the files the update may copy (vendor/ is skipped when dependencies are unchanged).
+     * Files are taken from the package's own list (.package-manifest) instead of the archive index,
+     * and every extracted file must match its SHA-256 from that list.
+     */
     private function extract(string $archive, string $staging, string $version): string
     {
         try {
+            $phar = new PharData($archive);
+            if (! isset($phar['package/.package-manifest'])) {
+                throw new UpdateFailed('invalid_package');
+            }
+            $manifest = $this->readManifest($phar['package/.package-manifest']->getContent());
+            foreach (['VERSION', 'artisan', 'composer.lock', 'vendor/autoload.php', 'public/build/manifest.json', 'app/Services/ApplicationUpdater.php'] as $required) {
+                if (! isset($manifest[$required])) {
+                    throw new UpdateFailed('invalid_package');
+                }
+            }
+            if (trim($phar['package/VERSION']->getContent()) !== $version) {
+                throw new UpdateFailed('invalid_package');
+            }
+            $sameVendor = $this->sameVendor($manifest['composer.lock']);
+            $selected = array_filter($manifest, fn ($hash, $rel) => ! $this->skipped($rel, $sameVendor), ARRAY_FILTER_USE_BOTH);
             mkdir($staging, 0755, true);
-            (new PharData($archive))->extractTo($staging, null, true);
+            $phar->extractTo($staging, array_map(fn ($rel) => 'package/'.$rel, array_keys($selected)), true);
+            unset($phar);
+        } catch (UpdateFailed $e) {
+            throw $e;
         } catch (Throwable $e) {
             throw new UpdateFailed('invalid_package', $e);
         }
-        $root = realpath($staging);
+        foreach ($selected as $rel => $hash) {
+            $file = $staging.'/package/'.$rel;
+            if (is_link($file) || ! is_file($file) || ! hash_equals($hash, hash_file('sha256', $file))) {
+                throw new UpdateFailed('invalid_package');
+            }
+        }
+        $realRoot = $this->normalize((string) realpath($staging));
         foreach ($this->walk($staging, true) as $path) {
             $real = realpath($path);
-            if (is_link($path) || $real === false || ! str_starts_with($this->normalize($real), $this->normalize($root).'/')) {
+            if (is_link($path) || $real === false || ! str_starts_with($this->normalize($real), $realRoot.'/')) {
                 throw new UpdateFailed('invalid_package');
             }
         }
-        $package = $staging.'/package';
-        foreach (['VERSION', 'artisan', 'composer.lock', 'vendor/autoload.php', 'public/build/manifest.json', 'app/Services/ApplicationUpdater.php'] as $required) {
-            if (! is_file($package.'/'.$required)) {
+
+        return $staging.'/package';
+    }
+
+    /** @return array<string, string> relative path => sha256, from "hash  path" lines (sha256sum format). */
+    private function readManifest(string $content): array
+    {
+        $files = [];
+        foreach (preg_split('/\r?\n/', trim($content)) as $line) {
+            if (! preg_match('/^([0-9a-f]{64}) [ *](.+)$/D', $line, $match)) {
                 throw new UpdateFailed('invalid_package');
             }
+            $rel = $match[2];
+            if ($rel === '.package-manifest') {
+                continue;
+            }
+            if (str_starts_with($rel, '/') || str_contains($rel, '\\') || str_contains($rel, ':') || in_array('..', explode('/', $rel), true) || in_array('.', explode('/', $rel), true)) {
+                throw new UpdateFailed('invalid_package');
+            }
+            $files[$rel] = $match[1];
         }
-        if (trim((string) file_get_contents($package.'/VERSION')) !== $version) {
+        if ($files === []) {
             throw new UpdateFailed('invalid_package');
         }
 
-        return $package;
+        return $files;
+    }
+
+    private function sameVendor(string $packageLockHash): bool
+    {
+        return is_file($this->base.'/composer.lock') && is_file($this->base.'/vendor/autoload.php')
+            && hash_file('sha256', $this->base.'/composer.lock') === $packageLockHash;
+    }
+
+    /** Files an update never touches: server config, user data, caches, and vendor/ when unchanged. */
+    private function skipped(string $rel, bool $sameVendor): bool
+    {
+        $name = basename($rel);
+
+        return $name === '.htaccess' || $name === '.env' || str_starts_with($name, '.env.') || $name === '.user.ini' || $name === 'php.ini'
+            || (bool) preg_match('#^(storage|bootstrap/cache|node_modules|tests|\.git|\.github)/#', $rel)
+            || ($sameVendor && str_starts_with($rel, 'vendor/'));
     }
 
     /** @return array<int, array{from: string, to: string, key: string}> Only new or changed files. */
     private function plan(string $package): array
     {
-        $sameVendor = is_file($this->base.'/composer.lock')
-            && hash_file('sha256', $this->base.'/composer.lock') === hash_file('sha256', $package.'/composer.lock')
-            && is_file($this->base.'/vendor/autoload.php');
+        $sameVendor = $this->sameVendor(hash_file('sha256', $package.'/composer.lock'));
         $mirror = $this->publicMirror();
         $plan = [];
         foreach ($this->walk($package) as $from) {
             $rel = substr($this->normalize($from), strlen($this->normalize($package)) + 1);
-            $name = basename($rel);
-            if ($name === '.htaccess' || $name === '.env' || str_starts_with($name, '.env.') || $name === '.user.ini' || $name === 'php.ini'
-                || preg_match('#^(storage|bootstrap/cache|node_modules|tests|\.git|\.github)/#', $rel)
-                || ($sameVendor && str_starts_with($rel, 'vendor/'))) {
+            if ($this->skipped($rel, $sameVendor)) {
                 continue;
             }
             $targets = [$rel => $this->base.'/'.$rel];
@@ -383,6 +472,34 @@ class ApplicationUpdater
             $item->isDir() && ! $item->isLink() ? @rmdir($item->getPathname()) : @unlink($item->getPathname());
         }
         @rmdir($dir);
+    }
+
+    /** File lock: the OS releases it if PHP dies (time limit, crash), so a failed attempt never blocks the next one. */
+    private function locked(callable $callback): mixed
+    {
+        $dir = $this->workDir();
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $handle = fopen($dir.'/update.lock', 'c');
+        if (! $handle || ! flock($handle, LOCK_EX | LOCK_NB)) {
+            $handle && fclose($handle);
+            throw new UpdateFailed('busy');
+        }
+        @set_time_limit(0);
+        ignore_user_abort(true);
+        try {
+            return $callback();
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
+        }
+    }
+
+    private function discardDownload(): void
+    {
+        @unlink($this->workDir().'/download.tar.gz');
+        @unlink($this->workDir().'/download.json');
     }
 
     private function workDir(): string

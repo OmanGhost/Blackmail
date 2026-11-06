@@ -65,7 +65,19 @@ class ApplicationUpdaterTest extends TestCase
     }
 
     /** Builds a release package like the GitHub workflow does and returns its bytes. */
-    private function package(string $version, array $overrides = []): string
+    /** Lists every file with its SHA-256, as the GitHub workflow does. $tamper files get a wrong hash. */
+    private function writeManifest(string $dir, array $tamper = []): void
+    {
+        $lines = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)) as $file) {
+            $rel = str_replace('\\', '/', substr($file->getPathname(), strlen($dir) + 1));
+            $lines[$rel] = (in_array($rel, $tamper, true) ? str_repeat('a', 64) : hash_file('sha256', $file->getPathname())).'  '.$rel;
+        }
+        ksort($lines);
+        file_put_contents($dir.'/.package-manifest', implode("\n", $lines)."\n");
+    }
+
+    private function package(string $version, array $overrides = [], array $tamper = []): string
     {
         $src = $this->root.'/build-'.Str::random(6);
         $this->writeTree($src.'/package', $overrides + [
@@ -74,6 +86,7 @@ class ApplicationUpdaterTest extends TestCase
             'app/Changed.php' => 'new changed', 'app/Added.php' => 'added', 'public/sw.js' => 'new sw', 'public/index.php' => 'new index',
             'public/.htaccess' => 'release rules', '.env' => 'APP_KEY=attacker', 'storage/app/data.txt' => 'overwritten',
         ]);
+        $this->writeManifest($src.'/package', $tamper);
         $tar = $src.'/package.tar';
         (new PharData($tar))->buildFromDirectory($src);
         (new PharData($tar))->compress(Phar::GZ);
@@ -150,7 +163,7 @@ class ApplicationUpdaterTest extends TestCase
 
     public static function badPackages(): array
     {
-        return [['checksum_failed'], ['package_missing'], ['invalid_package'], ['not_newer']];
+        return [['checksum_failed'], ['package_missing'], ['invalid_package'], ['tampered'], ['not_newer']];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('badPackages')]
@@ -160,10 +173,11 @@ class ApplicationUpdaterTest extends TestCase
             'checksum_failed' => $this->fakeRelease('v1.1.0', $this->package('1.1.0'), str_repeat('0', 64)),
             'package_missing' => $this->fakeRelease('v1.1.0', null),
             'invalid_package' => $this->fakeRelease('v1.1.0', $this->package('9.9.9')),
+            'tampered' => $this->fakeRelease('v1.1.0', $this->package('1.1.0', [], ['app/Changed.php'])),
             'not_newer' => $this->fakeRelease('v1.0.0', $this->package('1.0.0')),
         };
         try { $this->updater()->install(); $this->fail('Expected '.$reason); }
-        catch (UpdateFailed $e) { $this->assertSame($reason, $e->reason); }
+        catch (UpdateFailed $e) { $this->assertSame($reason === 'tampered' ? 'invalid_package' : $reason, $e->reason); }
         $this->assertSame("1.0.0
 ", file_get_contents($this->base.'/VERSION'));
         $this->assertSame('old changed', file_get_contents($this->base.'/app/Changed.php'));
@@ -183,16 +197,65 @@ class ApplicationUpdaterTest extends TestCase
         Livewire::test(Updates::class)->assertActionVisible('install')->assertActionHidden('rollback')
             ->callAction('install', ['password' => 'wrong-password'])->assertHasActionErrors(['password']);
         $this->assertNull($this->updater()->pending());
+        // Step 1: the button only downloads and verifies, so the request stays short.
         Livewire::test(Updates::class)->callAction('install', ['password' => 'password'])->assertHasNoActionErrors()->assertRedirect(Updates::getUrl());
+        $this->assertSame('99.0.0', $this->updater()->downloaded()['version']);
+        $this->assertNull($this->updater()->pending());
+        $this->assertSame("1.0.0\n", file_get_contents($this->base.'/VERSION'));
+
+        // Step 2: the next page load copies the files.
+        Livewire::test(Updates::class)->assertRedirect(Updates::getUrl());
+        $this->assertNull($this->updater()->downloaded());
         $this->assertSame('99.0.0', $this->updater()->pending()['to']);
 
-        // The redirected page load finishes the update.
+        // Step 3: the load after that runs migrations with the new code.
         Livewire::test(Updates::class)->assertNotified(__('updates.installed', ['version' => '99.0.0']))->assertActionHidden('install')->assertActionVisible('rollback');
         $this->assertNull($this->updater()->pending());
 
         $backup = $this->updater()->backups()[0]['id'];
         Livewire::test(Updates::class)->callAction('rollback', ['backup' => $backup, 'password' => 'password'])->assertHasNoActionErrors();
         $this->assertSame("1.0.0\n", file_get_contents($this->base.'/VERSION'));
+    }
+
+    public function test_a_crashed_attempt_never_blocks_the_next_one(): void
+    {
+        $this->fakeRelease('v1.1.0', $this->package('1.1.0'));
+        $lockFile = $this->base.'/storage/app/private/updates/update.lock';
+        @mkdir(dirname($lockFile), 0755, true);
+
+        // While another process holds the lock, a second update is refused...
+        $held = fopen($lockFile, 'c');
+        flock($held, LOCK_EX);
+        try { $this->updater()->prepare(); $this->fail('Expected busy'); }
+        catch (UpdateFailed $e) { $this->assertSame('busy', $e->reason); }
+
+        // ...but as soon as that process is gone (here: the handle is closed), the lock is free again.
+        fclose($held);
+        $this->assertSame('1.1.0', $this->updater()->prepare());
+    }
+
+    public function test_apply_gives_up_after_two_interrupted_attempts(): void
+    {
+        $this->fakeRelease('v1.1.0', $this->package('1.1.0'));
+        $this->updater()->prepare();
+        $state = $this->base.'/storage/app/private/updates/download.json';
+        // Simulate two requests killed by the host's time limit mid-apply.
+        file_put_contents($state, json_encode(['version' => '1.1.0', 'attempts' => 2]));
+
+        try { $this->updater()->apply(); $this->fail('Expected timed_out'); }
+        catch (UpdateFailed $e) { $this->assertSame('timed_out', $e->reason); }
+        $this->assertNull($this->updater()->downloaded());
+        $this->assertSame("1.0.0\n", file_get_contents($this->base.'/VERSION'));
+    }
+
+    public function test_terminal_command_finishes_a_pending_update_and_reports_up_to_date(): void
+    {
+        $this->fakeRelease('v1.1.0', $this->package('1.1.0'));
+        $this->updater()->install();
+        $this->artisan('app:update')->expectsOutputToContain('1.1.0')->assertExitCode(0);
+        $this->assertNull($this->updater()->pending());
+
+        $this->artisan('app:update')->expectsOutputToContain(__('updates.errors.not_newer'))->assertExitCode(0);
     }
 
     public function test_install_is_hidden_until_the_package_is_ready_and_from_other_staff(): void
