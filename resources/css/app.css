@@ -131,6 +131,13 @@ body { font-family:var(--font-sans); }
 .site-mobile-nav a.is-active { background: #eff6ff; color: #1d4ed8; }
 .dark .site-mobile-nav { border-color: #1e293b; }
 .dark .site-mobile-nav a.is-active { background: rgb(30 58 138 / .35); color: #93c5fd; }
+.site-install-btn:not([hidden]) { display: flex; align-items: center; gap: .6rem; padding: .8rem .9rem; border-radius: .75rem; font-weight: 700; color: #1d4ed8; text-align: start; }
+.site-install-btn:hover { background: #eff6ff; }
+.site-install-btn:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+.dark .site-install-btn { color: #93c5fd; }
+.dark .site-install-btn:hover { background: rgb(30 58 138 / .35); }
+/* Installed app: keep the floating quick-exit button clear of the phone's home bar. */
+@media (display-mode: standalone) { #quick-exit-form { bottom: max(1rem, env(safe-area-inset-bottom)); } }
 .site-footer { background: radial-gradient(ellipse at 100% 0%, rgb(37 99 235 / .2), transparent 50%), #0b1d30; color: #a9b8cc; }
 .site-footer-title { font-weight: 800; color: #fff; }
 .site-footer-links { display: grid; gap: .7rem; margin-top: 1rem; }

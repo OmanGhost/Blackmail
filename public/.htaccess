@@ -48,3 +48,11 @@
     ExpiresByType application/javascript "access plus 30 days"
     ExpiresByType text/javascript "access plus 30 days"
 </IfModule>
+
+# Installable app: the manifest needs its own type, and the service worker must always be re-checked
+AddType application/manifest+json .webmanifest
+<IfModule mod_headers.c>
+    <FilesMatch "^(sw\.js|site\.webmanifest)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

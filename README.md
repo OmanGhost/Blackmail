@@ -1,6 +1,6 @@
 # منصة إبتزاز
 
-Current release: **v1.13.2**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
+Current release: **v1.14.0**. See [CHANGELOG.md](CHANGELOG.md) for changes and upgrade instructions. The release number is recorded in [VERSION](VERSION).
 
 تذييل لوحة الإدارة يعرض `VERSION`. قسم «النظام ← إصدار التطبيق والتحديثات» متاح للمدير لقراءة آخر إصدار مستقر من GitHub. للمستودع الخاص أضف `GITHUB_UPDATE_TOKEN` إلى بيئة الخادم برمز Fine-grained محدود بمستودع `OmanGhost/Blackmail` وصلاحية `Contents: read`، ثم نفّذ `php artisan config:clear`. لا تستخدم رمز النشر واسع الصلاحيات داخل التطبيق. الفحص تلقائي عند فتح لوحة المدير ومخزّن 12 ساعة، مع زر فحص يدوي محدود بدقيقة. أمر `php artisan application:check-updates` مُجدول مرتين يوميًا عند تشغيل Laravel Scheduler. الفحص لا يثبت التحديثات تلقائيًا.
 

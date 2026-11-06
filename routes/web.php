@@ -15,6 +15,7 @@ Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots']
 Route::post('/consultation/evidence/{evidenceRequest}', [\App\Http\Controllers\SecureEvidenceController::class,'submit'])->middleware('throttle:10,10')->name('consultation.evidence.submit');
 Route::post('/consultation/evidence/submissions/{submission}/withdraw', [\App\Http\Controllers\SecureEvidenceController::class,'withdraw'])->middleware('throttle:10,10')->name('consultation.evidence.withdraw');
 Route::view('/neutral', 'support.neutral')->name('neutral');
+Route::view('/offline', 'offline')->name('offline');
 Route::post('/quick-exit', [SupportToolsController::class,'quickExit'])->name('quick-exit');
 Route::get('/privacy-center', [SupportToolsController::class,'privacy'])->name('privacy.center');
 Route::post('/privacy-center', [SupportToolsController::class,'requestDeletion'])->middleware('throttle:5,10')->name('privacy.delete');

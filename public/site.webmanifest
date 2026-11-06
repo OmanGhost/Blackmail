@@ -1,14 +1,27 @@
 {
+    "id": "./",
     "name": "منصة إبتزاز",
     "short_name": "إبتزاز",
+    "description": "إرشاد وتوعية ضد الابتزاز الإلكتروني، ودليل جهات الإبلاغ في الدول العربية.",
     "lang": "ar",
     "dir": "rtl",
     "start_url": "./",
-    "display": "browser",
+    "scope": "./",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui"],
+    "orientation": "any",
     "background_color": "#F3F6FA",
     "theme_color": "#102A43",
+    "categories": ["education", "utilities"],
     "icons": [
-        { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-        { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+        { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+        { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        { "name": "مساعدة عاجلة ضد الابتزاز", "short_name": "مساعدة عاجلة", "url": "stop-blackmail", "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+        { "name": "دليل الدول وجهات الإبلاغ", "short_name": "دليل الدول", "url": "countries", "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+        { "name": "متابعة طلب استشارة", "short_name": "متابعة طلب", "url": "consultation/track", "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }] }
     ]
 }
