@@ -17,7 +17,7 @@ use Filament\Actions\DeleteAction;
 class EmailTemplateResource extends Resource
 {
     protected static ?string $model = EmailTemplate::class;
-    public const SYSTEM_KEYS = ['request_received', 'request_replied', 'request_replied_contact', 'staff_new_request', 'staff_request_reply', 'general'];
+    public const SYSTEM_KEYS = ['request_received', 'request_replied', 'request_replied_contact', 'staff_new_request', 'staff_request_reply', 'invoice_issued', 'invoice_paid', 'general'];
     public static function canAccess(): bool { return auth()->user()?->hasRole('super-admin') ?? false; }
     public static function getNavigationLabel(): string { return 'قوالب البريد'; }
     public static function getModelLabel(): string { return 'قالب البريد'; }

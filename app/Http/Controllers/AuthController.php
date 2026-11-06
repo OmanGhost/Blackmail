@@ -58,7 +58,7 @@ class AuthController extends Controller
     public function account(Request $request): View
     {
         $filters = $request->validate([
-            'tab' => ['nullable', 'in:overview,requests,profile,security'],
+            'tab' => ['nullable', 'in:overview,requests,invoices,profile,security'],
             'status' => ['nullable', 'in:active,ended,new,in_review,in_progress,contacted,completed,closed'],
             'q' => ['nullable', 'string', 'max:30'],
             'sort' => ['nullable', 'in:newest,oldest,updated'],
@@ -94,6 +94,8 @@ class AuthController extends Controller
         return view('auth.account', [
             'user' => $user, 'requests' => $query->paginate(8)->withQueryString(),
             'stats' => $stats, 'tab' => $filters['tab'] ?? 'overview',
+            'invoices' => ($filters['tab'] ?? null) === 'invoices' ? $user->invoices()->with(['items', 'service'])->paginate(10)->withQueryString() : null,
+            'unpaidInvoices' => $user->invoices()->where('status', 'unpaid')->count(),
             'focusRequest'=>$focusRequest,
             'nextTask'=>$focusRequest?->tasks()->whereNull('completed_at')->first(),
             'lastReply'=>$focusRequest?->messages()->where('sender','staff')->reorder('id','desc')->first(),

@@ -42,6 +42,8 @@ Route::get('/directory-request', [\App\Http\Controllers\DirectoryRequestControll
 Route::post('/directory-request', [\App\Http\Controllers\DirectoryRequestController::class,'store'])->middleware('throttle:3,10')->name('directory.requests.store');
 Route::get('/countries/{country:slug}', [ContentController::class, 'country'])->name('countries.show');
 Route::view('/protection', 'content.protection')->name('protection');
+Route::get('/services', [\App\Http\Controllers\ServiceController::class, 'index'])->name('services');
+Route::get('/services/{service:slug}', [\App\Http\Controllers\ServiceController::class, 'show'])->name('services.show');
 Route::view('/tools', 'content.tools')->name('tools');
 Route::get('/consultation', [ConsultationController::class, 'create'])->name('consultation');
 Route::get('/stop-blackmail', [ConsultationController::class, 'emergency'])->name('blackmail.help');
@@ -90,6 +92,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/verify-email', [SupportToolsController::class,'sendMemberVerification'])->middleware('throttle:3,10')->name('account.verification.send');
     Route::get('/account/requests/{consultationRequest}', [ConsultationController::class, 'memberRequest'])->name('account.requests.show');
     Route::get('/account', [AuthController::class, 'account'])->name('account');
+    Route::post('/services/{service:slug}/request', [\App\Http\Controllers\ServiceController::class, 'request'])->middleware('throttle:5,10')->name('services.request');
+    Route::get('/account/invoices/{invoice}', [\App\Http\Controllers\ServiceController::class, 'invoice'])->name('account.invoices.show');
     Route::put('/account', [AuthController::class, 'updateProfile'])->name('account.update');
     Route::put('/account/password', [AuthController::class, 'updatePassword'])->name('account.password');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

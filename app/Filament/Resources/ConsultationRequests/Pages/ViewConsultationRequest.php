@@ -109,6 +109,15 @@ class ViewConsultationRequest extends ViewRecord
                     app(\App\Services\RequestNotifications::class)->staffReplied($this->record);
                     Notification::make()->title('تم إرسال الرد إلى صفحة متابعة صاحب الطلب')->success()->send();
                 }),
+            Action::make('issue_service_invoice')->label(__('billing.issue_service_invoice'))->icon('heroicon-o-document-plus')->color('success')
+                ->visible(fn () => $this->record->service && $this->record->user && \App\Filament\Resources\Invoices\InvoiceResource::canAccess())
+                ->requiresConfirmation()->modalDescription(fn () => __('billing.issue_service_invoice_confirm', ['price' => $this->record->service->formattedPrice()]))
+                ->action(function (): void {
+                    abort_unless(\App\Filament\Resources\Invoices\InvoiceResource::canAccess(), 403);
+                    $invoice = app(\App\Services\Billing::class)->issueForRequest($this->record, auth()->id());
+                    $this->record->refresh();
+                    Notification::make()->title(__('billing.issued', ['number' => $invoice->number]))->success()->send();
+                }),
             EditAction::make(), DeleteAction::make(),
         ];
     }

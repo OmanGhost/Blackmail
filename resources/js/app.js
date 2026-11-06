@@ -43,3 +43,8 @@ document.querySelectorAll('[data-hero-slideshow]').forEach((hero) => {
     motion.addEventListener('change', () => { paused = motion.matches; schedule(); });
     schedule();
 });
+
+// Invoice "Print / save PDF" button.
+document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-print]')) window.print();
+});

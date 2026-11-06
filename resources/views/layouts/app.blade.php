@@ -5,6 +5,7 @@
         ['events', __('events.title'), 'events*'],
         ['countries', 'دليل الدول', 'countries*'],
         ['protection', 'الحماية الرقمية', 'protection'],
+        ['services', __('billing.services'), 'services*'],
         ['consultation', 'الاستشارات', 'consultation'],
         ['consultation.track', 'متابعة طلب', 'consultation.track'],
     ];
@@ -44,6 +45,6 @@
 <main id="main">{{ $slot??'' }}@yield('content')</main>
 <footer class="site-footer"><div class="container-page grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.3fr]"><div><a href="{{ route('home') }}" class="flex items-center gap-3"><span class="site-logo-mark bg-white/10"><svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 4 6v5c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-3Z"/><path d="m9 12 2 2 4-5"/></svg></span><b class="text-xl text-white">{{ config('app.name') }}</b></a><p class="mt-5 leading-8">منصة عربية مستقلة للتوعية والإرشاد. لسنا جهة إنفاذ قانون أو قناة بلاغات حكومية.</p></div>
 <div><h2 class="site-footer-title">روابط مهمة</h2><div class="site-footer-links"><a href="{{ route('help') }}">المساعدة الفورية</a><a href="{{ route('protection') }}">الحماية الرقمية</a><a href="{{ route('contact') }}">تواصل معنا</a></div></div>
-<div><h2 class="site-footer-title">استكشف</h2><div class="site-footer-links"><a href="{{ route('blog') }}">{{ __('blog.title') }}</a><a href="{{ route('events') }}">{{ __('events.title') }}</a><a href="{{ route('countries') }}">دليل الدول</a><a href="{{ route('consultation') }}">الاستشارات</a><a href="{{ route('consultation.track') }}">متابعة طلب</a></div></div>
+<div><h2 class="site-footer-title">استكشف</h2><div class="site-footer-links"><a href="{{ route('blog') }}">{{ __('blog.title') }}</a><a href="{{ route('events') }}">{{ __('events.title') }}</a><a href="{{ route('services') }}">{{ __('billing.services') }}</a><a href="{{ route('countries') }}">دليل الدول</a><a href="{{ route('consultation') }}">الاستشارات</a><a href="{{ route('consultation.track') }}">متابعة طلب</a></div></div>
 <div><h2 class="site-footer-title">الخصوصية أولاً</h2><p class="mt-4 leading-8">لا نطلب صوراً خاصة أو كلمات مرور. استخدم خدمات الطوارئ المحلية عند وجود خطر جسدي مباشر.</p></div></div>
 <div class="border-t border-white/10"><div class="container-page flex flex-wrap items-center justify-between gap-3 py-6 text-sm"><span>© {{ date('Y') }} {{ config('app.name') }}</span><span class="flex flex-wrap items-center gap-4">@if(is_file((string) config('platform.geo.database')))<span class="text-xs">{{ __('hotline.attribution') }} <a href="https://db-ip.com" rel="noopener" target="_blank" class="underline hover:text-white">IP Geolocation by DB-IP</a></span>@endif<a href="{{ route('privacy.center') }}" class="hover:text-white">مركز الخصوصية</a></span></div></div></footer>@livewireScripts</body></html>

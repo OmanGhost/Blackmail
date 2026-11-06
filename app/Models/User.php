@@ -80,6 +80,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->hasMany(ConsultationRequest::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->latest('id');
+    }
+
     public function emailDeliveries(): HasMany
     {
         return $this->hasMany(EmailDelivery::class)->latest();

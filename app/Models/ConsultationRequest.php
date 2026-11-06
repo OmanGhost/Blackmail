@@ -91,6 +91,16 @@ class ConsultationRequest extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->latest('id');
+    }
+
     public function messages(): HasMany
     {
         return $this->hasMany(ConsultationMessage::class)->orderBy('id');

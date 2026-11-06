@@ -75,6 +75,14 @@ body { font-family:var(--font-sans); }
 .member-status.status-in_review { background: #fffbeb; color: #92400e; }
 .member-status.status-contacted { background: #ecfdf5; color: #047857; }
 .member-status.status-in_progress { background: #eef2ff; color: #4338ca; }
+.member-status.invoice-unpaid { background: #fffbeb; color: #92400e; }
+.member-status.invoice-paid { background: #ecfdf5; color: #047857; }
+.member-status.invoice-cancelled { background: #f1f5f9; color: #64748b; }
+@media print {
+    .site-header, .site-footer, .site-mobile-nav, #quick-exit-form { display: none !important; }
+    body { background: #fff !important; }
+    .invoice-sheet { max-width: none; box-shadow: none; }
+}
 .member-status.status-completed { background: #ecfdf5; color: #047857; }
 
 .tracking-workspace { width: min(100% - 3rem, 86rem); margin-inline: auto; padding-block: 2.5rem 5rem; }

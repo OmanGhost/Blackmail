@@ -12,6 +12,15 @@ class ConsultationRequestInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+            Section::make(__('billing.requested_service'))->visible(fn ($record) => $record->service_id || $record->invoices()->exists())->columns(2)->schema([
+                TextEntry::make('service.name_ar')->label(__('billing.service'))->placeholder('—'),
+                TextEntry::make('service.price_minor')->label(__('billing.price'))->formatStateUsing(fn ($state, $record) => $record->service?->formattedPrice())->placeholder('—'),
+                RepeatableEntry::make('invoices')->label(__('billing.invoices'))->columns(3)->columnSpanFull()->schema([
+                    TextEntry::make('number')->label(__('billing.invoice_number')),
+                    TextEntry::make('total_minor')->label(__('billing.total'))->formatStateUsing(fn ($state, $record) => $record->money($state)),
+                    TextEntry::make('status')->label(__('billing.status_label'))->badge()->formatStateUsing(fn ($state) => __('billing.status.'.$state)),
+                ]),
+            ]),
             Section::make('طلبات المعلومات والمرفقات الآمنة')->description('لا تُعرض المحتويات هنا. افتح مراجعة الإرسالات لتسجيل الوصول وفك التشفير للمختص المخوّل فقط.')->schema([
                 RepeatableEntry::make('evidenceRequests')->label('النماذج المرسلة للمستخدم')->columns(3)->schema([
                     TextEntry::make('instructions')->label('المطلوب')->columnSpanFull(),

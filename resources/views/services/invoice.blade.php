@@ -1,0 +1,26 @@
+@extends('layouts.app',['title'=>__('billing.invoice').' '.$invoice->number])
+@section('content')
+@php($issuer=$invoice->issuer ?? [])
+<section class="container-page py-10 print:py-0">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden"><a href="{{ route('account',['tab'=>'invoices']) }}" class="text-sm font-bold text-brand">{{ __('billing.back') }}</a><button type="button" data-print class="member-button member-button-primary">{{ __('billing.print') }}</button></div>
+    <article class="invoice-sheet mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-6 text-slate-800 md:p-10 print:rounded-none print:border-0 print:p-0">
+        <header class="flex flex-wrap items-start justify-between gap-6 border-b border-slate-200 pb-6">
+            <div><p class="text-xs text-slate-500">{{ __('billing.from') }}</p><h1 class="mt-1 text-2xl font-extrabold text-navy">{{ $issuer['issuer_name'] ?? config('app.name') }}</h1>
+                @if(!empty($issuer['issuer_address']))<p class="mt-2 whitespace-pre-line text-sm">{{ $issuer['issuer_address'] }}</p>@endif
+                @if(!empty($issuer['issuer_email']) || !empty($issuer['issuer_phone']))<p class="mt-1 text-sm" dir="ltr">{{ collect([$issuer['issuer_email'] ?? null, $issuer['issuer_phone'] ?? null])->filter()->join(' · ') }}</p>@endif
+                @if(!empty($issuer['tax_number']))<p class="mt-1 text-sm">{{ __('billing.tax_number') }}: <span dir="ltr">{{ $issuer['tax_number'] }}</span></p>@endif</div>
+            <div class="text-end"><p class="text-3xl font-extrabold text-navy">{{ __('billing.invoice') }}</p><p class="mt-2 font-mono text-lg" dir="ltr">{{ $invoice->number }}</p><span class="member-status invoice-{{ $invoice->status }} mt-3 inline-block">{{ __('billing.status.'.$invoice->status) }}@if($invoice->isOverdue()) · {{ __('billing.overdue') }}@endif</span></div>
+        </header>
+        <div class="grid gap-6 border-b border-slate-200 py-6 sm:grid-cols-2">
+            <div><p class="text-xs text-slate-500">{{ __('billing.bill_to') }}</p><p class="mt-1 font-bold">{{ $invoice->customer_name }}</p><p class="text-sm" dir="ltr">{{ $invoice->customer_email }}</p>@if($invoice->consultationRequest)<p class="mt-2 text-sm">{{ __('billing.request') }}: <span dir="ltr">{{ $invoice->consultationRequest->request_number }}</span></p>@endif</div>
+            <dl class="grid grid-cols-2 gap-3 text-sm"><dt class="text-slate-500">{{ __('billing.issued_at') }}</dt><dd>{{ $invoice->issued_at?->timezone('Asia/Muscat')->format('Y-m-d') }}</dd><dt class="text-slate-500">{{ __('billing.due_at') }}</dt><dd>{{ $invoice->due_at?->format('Y-m-d') ?? '—' }}</dd>@if($invoice->paid_at)<dt class="text-slate-500">{{ __('billing.paid_at') }}</dt><dd>{{ $invoice->paid_at->timezone('Asia/Muscat')->format('Y-m-d') }}</dd>@endif</dl>
+        </div>
+        <div class="overflow-x-auto"><table class="mt-6 w-full text-sm"><thead><tr class="border-b border-slate-200 text-slate-500"><th class="py-2 text-start font-semibold">{{ __('billing.item') }}</th><th class="py-2 text-center font-semibold">{{ __('billing.quantity') }}</th><th class="py-2 text-end font-semibold">{{ __('billing.unit_price') }}</th><th class="py-2 text-end font-semibold">{{ __('billing.line_total') }}</th></tr></thead>
+        <tbody>@foreach($invoice->items as $item)<tr class="border-b border-slate-100"><td class="py-3">{{ $item->description }}</td><td class="py-3 text-center">{{ $item->quantity }}</td><td class="whitespace-nowrap py-3 text-end">{{ $invoice->money($item->unit_price_minor) }}</td><td class="whitespace-nowrap py-3 text-end">{{ $invoice->money($item->total_minor) }}</td></tr>@endforeach</tbody></table></div>
+        <dl class="ms-auto mt-6 grid max-w-xs grid-cols-2 gap-2 text-sm"><dt class="text-slate-500">{{ __('billing.subtotal') }}</dt><dd class="text-end">{{ $invoice->money($invoice->subtotal_minor) }}</dd>@if((float) $invoice->tax_rate > 0)<dt class="text-slate-500">{{ __('billing.tax',['rate'=>rtrim(rtrim((string) $invoice->tax_rate,'0'),'.')]) }}</dt><dd class="text-end">{{ $invoice->money($invoice->tax_minor) }}</dd>@endif<dt class="border-t border-slate-200 pt-2 text-base font-extrabold text-navy">{{ __('billing.total') }}</dt><dd class="border-t border-slate-200 pt-2 text-end text-base font-extrabold text-navy">{{ $invoice->money($invoice->total_minor) }}</dd></dl>
+        @if($invoice->status==='paid')<p class="mt-6 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900">{{ __('billing.payment_method') }}: {{ __('billing.method.'.$invoice->payment_method) }}@if($invoice->payment_reference) · {{ __('billing.payment_reference') }}: <span dir="ltr">{{ $invoice->payment_reference }}</span>@endif</p>
+        @elseif($invoice->status==='unpaid' && !empty($issuer['payment_instructions']))<div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm"><p class="font-bold">{{ __('billing.how_to_pay') }}</p><p class="mt-2 whitespace-pre-line leading-7">{{ $issuer['payment_instructions'] }}</p><p class="mt-2 font-semibold">{{ __('billing.pay_reference_hint',['number'=>$invoice->number]) }}</p></div>@endif
+        @if($invoice->notes)<div class="mt-6 text-sm"><p class="font-bold">{{ __('billing.notes') }}</p><p class="mt-2 whitespace-pre-line leading-7">{{ $invoice->notes }}</p></div>@endif
+    </article>
+</section>
+@endsection

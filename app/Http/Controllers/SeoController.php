@@ -12,7 +12,7 @@ class SeoController extends Controller
 {
     public function sitemap(): Response
     {
-        $urls = collect(['home', 'help', 'blackmail.help', 'blog', 'countries', 'events', 'protection', 'tools', 'consultation'])
+        $urls = collect(['home', 'help', 'blackmail.help', 'blog', 'countries', 'events', 'services', 'protection', 'tools', 'consultation'])
             ->map(fn ($route) => ['loc' => route($route), 'lastmod' => null]);
 
         Category::where('is_active', true)->orderBy('sort_order')->get(['slug', 'updated_at'])
@@ -23,6 +23,9 @@ class SeoController extends Controller
             ->each(fn ($country) => $urls->push(['loc' => route('countries.show', $country), 'lastmod' => $country->updated_at ?? $country->last_verified_at]));
         Event::public()->latest('starts_at')->get(['slug', 'updated_at'])
             ->each(fn ($event) => $urls->push(['loc' => route('events.show', $event), 'lastmod' => $event->updated_at]));
+
+        \App\Models\Service::available()->orderBy('sort_order')->get(['slug', 'updated_at'])
+            ->each(fn ($service) => $urls->push(['loc' => route('services.show', $service), 'lastmod' => $service->updated_at]));
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
         foreach ($urls as $url) {
