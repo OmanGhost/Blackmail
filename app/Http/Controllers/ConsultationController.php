@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ConsultationRequest;
 use App\Models\Country;
+use App\Services\RequestNotifications;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -67,6 +68,8 @@ class ConsultationController extends Controller
         if ($case->user) {
             app(\App\Services\PlatformMail::class)->send($case->user, 'request_received');
         }
+        // Sent after the response so SMTP delays never slow the requester down.
+        dispatch(fn () => app(RequestNotifications::class)->newRequest($case))->afterResponse();
         return redirect()->route('consultation.success')->with('tracking_code', $tracking)->with('request_number', $case->request_number);
     }
 
@@ -148,12 +151,14 @@ class ConsultationController extends Controller
     public function reply(Request $request): RedirectResponse
     {
         $data = $request->validate(['body' => ['required', 'string', 'min:3', 'max:5000']]);
-        DB::transaction(function () use ($data) {
+        $case = DB::transaction(function () use ($data) {
             $case = ConsultationRequest::lockForUpdate()->findOrFail(session('consultation_access_id'));
             abort_if($case->isEnded(), 422, 'الطلب منتهٍ أو مغلق');
             $case->messages()->create(['sender' => 'requester', 'body' => $data['body']]);
             $case->update(['status' => 'in_review']);
+            return $case;
         });
+        dispatch(fn () => app(RequestNotifications::class)->requesterReplied($case))->afterResponse();
         return redirect()->route('consultation.track')->with('success', 'تم إرسال رسالتك للفريق');
     }
 

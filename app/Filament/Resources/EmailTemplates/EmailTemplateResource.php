@@ -17,6 +17,7 @@ use Filament\Actions\DeleteAction;
 class EmailTemplateResource extends Resource
 {
     protected static ?string $model = EmailTemplate::class;
+    public const SYSTEM_KEYS = ['request_received', 'request_replied', 'request_replied_contact', 'staff_new_request', 'staff_request_reply', 'general'];
     public static function canAccess(): bool { return auth()->user()?->hasRole('super-admin') ?? false; }
     public static function getNavigationLabel(): string { return 'قوالب البريد'; }
     public static function getModelLabel(): string { return 'قالب البريد'; }
@@ -40,11 +41,11 @@ class EmailTemplateResource extends Resource
             TextColumn::make('key')->label('المفتاح'),
             TextColumn::make('subject')->label('العنوان'),
             IconColumn::make('is_active')->label('مفعّل')->boolean(),
-        ])->recordActions([EditAction::make(), DeleteAction::make()->visible(fn (EmailTemplate $record) => ! in_array($record->key, ['request_received', 'request_replied', 'general']))]);
+        ])->recordActions([EditAction::make(), DeleteAction::make()->visible(fn (EmailTemplate $record) => ! in_array($record->key, self::SYSTEM_KEYS))]);
     }
     public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return static::canAccess() && ! in_array($record->key, ['request_received', 'request_replied', 'general']);
+        return static::canAccess() && ! in_array($record->key, self::SYSTEM_KEYS);
     }
     public static function getPages(): array { return ['index' => Pages\ManageEmailTemplates::route('/')]; }
 }

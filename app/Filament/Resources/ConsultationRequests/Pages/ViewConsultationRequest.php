@@ -106,9 +106,7 @@ class ViewConsultationRequest extends ViewRecord
                         $this->record->update(['status' => 'contacted', 'assigned_to' => $this->record->assigned_to ?? auth()->id()]);
                     });
                     $this->record->refresh();
-                    if ($this->record->user) {
-                        app(\App\Services\PlatformMail::class)->send($this->record->user, 'request_replied');
-                    }
+                    app(\App\Services\RequestNotifications::class)->staffReplied($this->record);
                     Notification::make()->title('تم إرسال الرد إلى صفحة متابعة صاحب الطلب')->success()->send();
                 }),
             EditAction::make(), DeleteAction::make(),
