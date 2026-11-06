@@ -1,6 +1,9 @@
 <x-filament-panels::page>
 @php($service=app(\App\Services\ApplicationUpdates::class))
 <x-filament::section><p class="leading-8">{{ __('updates.intro') }}</p><dl class="mt-6 grid gap-5 sm:grid-cols-2"><div><dt>{{ __('updates.version') }}</dt><dd class="mt-2 text-2xl font-bold" dir="ltr">v{{ $service->version() }}</dd></div><div><dt>{{ __('updates.latest') }}</dt><dd class="mt-2 text-2xl font-bold" dir="ltr">{{ $result['latest']??'—' }}</dd></div></dl><p role="status" class="mt-6 font-bold">{{ __('updates.'.$service->displayStatus($result)) }}</p>@if($result)<p class="mt-3 text-sm">{{ __('updates.checked') }}: {{ \Carbon\Carbon::parse($result['checked_at'])->timezone('Asia/Muscat')->format('Y-m-d H:i') }}</p>@endif
+@if($service->displayStatus($result)==='available' && !($result['package']??false))<p class="mt-3 text-sm">{{ __('updates.package_pending') }}</p>@endif
 @if($result['url']??null)<a href="{{ $result['url'] }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block font-bold underline">{{ __('updates.release') }}</a>@endif</x-filament::section>
+@php($backups=app(\App\Services\ApplicationUpdater::class)->backups())
+@if($backups)<x-filament::section><p class="font-bold">{{ __('updates.backups') }}</p><ul class="mt-3 space-y-1 text-sm">@foreach($backups as $backup)<li dir="ltr" class="text-start">v{{ $backup['from'] }} → v{{ $backup['to'] }} · {{ \Carbon\Carbon::parse($backup['created_at'])->timezone('Asia/Muscat')->format('Y-m-d H:i') }}</li>@endforeach</ul></x-filament::section>@endif
 <x-filament::section><p class="leading-8">{{ __('updates.automatic') }}</p><p class="mt-4 leading-8">{{ __('updates.setup') }}</p><a href="https://docs.github.com/en/rest/releases/releases#get-the-latest-release" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block underline">{{ __('updates.docs') }}</a><p class="mt-4 leading-8">{{ __('updates.read_only') }}</p></x-filament::section>
 </x-filament-panels::page>

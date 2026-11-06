@@ -18,5 +18,7 @@ return [
         'repository' => 'OmanGhost/Blackmail',
         'token' => env('GITHUB_UPDATE_TOKEN'),
         'interval_hours' => 12,
+        // Separate web root (e.g. cPanel public_html) that should also receive public files. Detected automatically when empty.
+        'public_mirror' => env('UPDATE_PUBLIC_PATH'),
     ],
 ];

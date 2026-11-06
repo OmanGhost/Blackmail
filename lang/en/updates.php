@@ -1,2 +1,27 @@
 <?php
-return ['title'=>'Application version and updates','version'=>'Application version','latest'=>'Latest published version','check'=>'Check for updates','checked'=>'Last checked','available'=>'An update is available','current'=>'Up to date','ahead'=>'Local version is newer than the published release','not_checked'=>'Not checked yet','not_configured'=>'Private repository access needs configuration','access_denied'=>'Access failed: check token and repository permissions','rate_limited'=>'Request limit reached or access temporarily blocked','unavailable'=>'Update service is unavailable','invalid_response'=>'Release information could not be read','release'=>'View release and change log ↗','intro'=>'Checks the latest stable published release in OmanGhost/Blackmail against the installed version. Rechecks hourly while up to date and whenever this page opens; manual checks are limited to once per minute.','setup'=>'For the private repository, set GITHUB_UPDATE_TOKEN in the server environment to a token limited to this repository with Contents: read permission, then clear the configuration cache. Do not send the token in support requests or commit it.','read_only'=>'This only checks for releases. It does not install files or execute repository commands. Back up the application and review release instructions before updating.','automatic'=>'Checks run when the administrator opens the panel; scheduled checks can also run through the system scheduler.','docs'=>'GitHub permission guidance ↗'];
+return [
+    'title'=>'Application version and updates','version'=>'Application version','latest'=>'Latest published version','check'=>'Check for updates','checked'=>'Last checked',
+    'available'=>'An update is available','current'=>'Up to date','ahead'=>'Local version is newer than the published release','not_checked'=>'Not checked yet',
+    'not_configured'=>'Private repository access needs configuration','access_denied'=>'Access failed: check token and repository permissions','rate_limited'=>'Request limit reached or access temporarily blocked',
+    'unavailable'=>'Update service is unavailable','invalid_response'=>'Release information could not be read','release'=>'View release and change log ↗',
+    'intro'=>'Checks the latest stable published release in OmanGhost/Blackmail against the installed version. Rechecks hourly while up to date and whenever this page opens; manual checks are limited to once per minute.',
+    'setup'=>'For the private repository, set GITHUB_UPDATE_TOKEN in the server environment to a token limited to this repository with Contents: read permission, then clear the configuration cache. Do not send the token in support requests or commit it.',
+    'read_only'=>'"Install" downloads the prebuilt release package from GitHub, verifies it, backs up every file it replaces, copies the new files in and runs database migrations. It never changes .env, .htaccess files or the storage folder. Back up the database before updating.',
+    'automatic'=>'Checks run when the administrator opens the panel; scheduled checks can also run through the system scheduler.','docs'=>'GitHub permission guidance ↗',
+    'package_pending'=>'The install package for this release is still being built on GitHub (usually within 5 minutes). Check again shortly.',
+    'install'=>'Install update v:version','install_heading'=>'Install update from the admin panel',
+    'install_warning'=>'The new release will be downloaded, application files replaced and database migrations run. This can take a minute. Replaced files are backed up and can be rolled back. Keep this page open.',
+    'password'=>'Current password to confirm','installed'=>'Updated to v:version successfully',
+    'rollback'=>'Roll back an update','backup'=>'Backup','backup_option'=>'Restore v:from (before updating to v:to) — :date',
+    'rollback_warning'=>'Application files will be restored to how they were before the update. Database changes are kept.','rolled_back'=>'Restored the v:version files',
+    'backups'=>'Backups available for rollback',
+    'errors'=>[
+        'not_configured'=>'Set GITHUB_UPDATE_TOKEN first.','unavailable'=>'Could not reach GitHub. Try again later.','invalid_response'=>'Release information could not be read.',
+        'package_missing'=>'The install package for this release is not ready yet. Try again in a few minutes.','pending'=>'An update has not finished. Open the updates page to finish it, or roll it back.',
+        'busy'=>'Another update is running right now.','not_newer'=>'No release newer than the installed version.','download_failed'=>'The update package could not be downloaded. Nothing was changed.',
+        'checksum_failed'=>'The update package failed its integrity check. Nothing was changed.','invalid_package'=>'The update package is invalid. Nothing was changed.',
+        'not_writable'=>'The server cannot write to the application files. Nothing was changed. Update from the terminal instead.','copy_failed'=>'Copying files failed, and the previous version was restored automatically.',
+        'migrate_failed'=>'Files were copied but database migrations failed. Check the log, or roll back the update.','version_mismatch'=>'The installed version does not match the pending update, so it was not finished.',
+        'backup_missing'=>'That backup does not exist.',
+    ],
+];

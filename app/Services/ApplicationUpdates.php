@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\{Cache,Http};
 use Throwable;
 class ApplicationUpdates
 {
-    public function version(): string { return trim(file_get_contents(base_path('VERSION'))); }
+    public function version(): string { return app(ApplicationUpdater::class)->version(); }
     private function key(): string { return 'application-release-check:'.hash('sha256',config('platform.updates.repository')); }
     public function cached(): ?array { return Cache::get($this->key()); }
     public function check(bool $force=false): array
@@ -12,7 +12,7 @@ class ApplicationUpdates
         $cached=$this->cached();
         // Bound manual checks too, to avoid exhausting GitHub's rate limit.
         if ($cached && (!$force || now()->diffInSeconds(\Carbon\Carbon::parse($cached['checked_at']),true)<60)) return $cached;
-        $result=['status'=>'not_configured','latest'=>null,'url'=>null,'checked_at'=>now()->toIso8601String()];
+        $result=['status'=>'not_configured','latest'=>null,'url'=>null,'package'=>false,'checked_at'=>now()->toIso8601String()];
         $token=config('platform.updates.token');
         if (is_string($token) && $token!=='') {
             try {
@@ -23,12 +23,13 @@ class ApplicationUpdates
                     if (is_string($tag) && preg_match('/^v?(\d+\.\d+\.\d+)$/D',$tag,$match) && !($data['draft']??true) && !($data['prerelease']??true)) {
                         $result['status']='ok';$result['latest']=$match[1];
                         $result['url']='https://github.com/OmanGhost/Blackmail/releases/tag/'.rawurlencode($tag);
+                        $result['package']=collect($data['assets']??[])->pluck('name')->contains(ApplicationUpdater::packageName($tag));
                     } else $result['status']='invalid_response';
                 } else $result['status']=match($response->status()) {401,404=>'access_denied',403,429=>'rate_limited',default=>'unavailable'};
             } catch (Throwable) { $result['status']='unavailable'; }
         }
-        // A pending update stays pending, so cache it longer. When up to date, recheck hourly so new releases show up quickly.
-        $available=$result['status']==='ok' && version_compare($result['latest'],$this->version(),'>');
+        // A ready update stays ready, so cache it longer. Otherwise recheck hourly so new releases and packages show up quickly.
+        $available=$result['status']==='ok' && $result['package'] && version_compare($result['latest'],$this->version(),'>');
         Cache::put($this->key(),$result,now()->addHours($available?(int)config('platform.updates.interval_hours',12):1));
         return $result;
     }

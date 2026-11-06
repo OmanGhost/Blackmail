@@ -1,0 +1,76 @@
+# Builds the install package that the admin panel's "Install update" button downloads.
+# The package holds the code plus vendor/ and built assets, so the server never runs Composer or npm.
+name: Release package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to package (e.g. v1.16.0)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      # Lets artisan commands run during composer install without Redis or MySQL.
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: Check VERSION matches the tag
+        run: test "v$(tr -d '[:space:]' < VERSION)" = "$TAG"
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, zip, pdo_sqlite, bcmath
+          tools: composer:v2
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install PHP dependencies (production)
+        run: |
+          cp .env.example .env
+          php -r "file_put_contents('.env', preg_replace('/^APP_KEY=.*$/m', 'APP_KEY=base64:'.base64_encode(random_bytes(32)), file_get_contents('.env')));"
+          composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Create package
+        run: |
+          mkdir -p dist/package
+          git archive HEAD | tar -x -C dist/package
+          cp -R vendor dist/package/vendor
+          cp -R public/build dist/package/public/build
+          for dir in public/css/filament public/js/filament public/fonts/filament; do
+            if [ -d "$dir" ]; then mkdir -p "dist/package/$(dirname "$dir")"; cp -R "$dir" "dist/package/$dir"; fi
+          done
+          rm -rf dist/package/tests dist/package/.github dist/package/storage dist/package/bootstrap/cache dist/package/.env
+          tar -czf "dist/blackmail-$TAG.tar.gz" -C dist package
+          (cd dist && sha256sum "blackmail-$TAG.tar.gz" > "blackmail-$TAG.tar.gz.sha256")
+          ls -lh dist
+
+      - name: Attach package to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" "dist/blackmail-$TAG.tar.gz" "dist/blackmail-$TAG.tar.gz.sha256" --clobber
